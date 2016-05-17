@@ -1,22 +1,40 @@
 #pragma once
-#include <complex>
 #include <string>
 #include <cmath>
 #include <fstream>
 #include <assert.h>
 #include "particles.h"
+#include <iostream>
+using std::cout; using std::endl;
 
-void read_from_file(Particles& p, const std::string& filename){
-    std::ifstream inp(filename.c_str(),std::ios::binary);
-    assert(inp);
-    const int size=N*sizeof(double);
-    inp.read((char*)p.x.data(),size);
-    inp.read((char*)p.y.data(),size);
-    inp.read((char*)p.w.data(),size);
-    inp.close();
+void read_from_file(const std::string& filename, Particles& particles, Particles& targets){
+  std::ifstream inp(filename.c_str(),std::ios::binary);
+  assert(inp);
+  int N;
+  inp.read((char *) &N,sizeof(int));
+  particles.resize(N);
+  int size=N*sizeof(double);
+  inp.read((char*)particles.x,size);
+  inp.read((char*)particles.y,size);
+  inp.read((char*)particles.w,size);
+
+  inp.read((char *) &N,sizeof(int));
+  targets.resize(N);
+  size = N*sizeof(double);
+  inp.read((char*)targets.x,size);
+  inp.read((char*)targets.y,size);
+  inp.read((char*)targets.w,size);
+
+  assert(inp.tellg() != inp.end);
+  inp.close();
+  }
+
+void writeToFile(const Particles& p, const std::string& filename){
+  std::ofstream out(filename.c_str());
+  assert(out);
+  for(int i=0;i<p.N;i++) out<<p.x[i]<<"\t"<<p.y[i]<<"\t"<<p.w[i]<<endl;
 }
 
-#include <iostream>
 using std::cout; using std::endl;
 bool check_from_file(double res,int k, const std::string& filename){
     std::ifstream inp(filename.c_str());
@@ -36,3 +54,5 @@ bool check_from_file(double res,int k, const std::string& filename){
     }
     return check;
 }
+
+
