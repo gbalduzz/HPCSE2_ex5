@@ -6,11 +6,11 @@
 #define EX2_EXTENT_H
 #include<omp.h>
 #include<vector>
-using pairf=std::pair<float,float>;
+using pairf=std::pair<double,double>;
 
-pairf serial_MinMax(const float * const  x,int N);
+pairf serial_MinMax(const double * const  x,int N);
 
-pairf MinMax(const float * const  x,int N)
+pairf MinMax(const double * const  x,int N)
 //parallel implementation
 {
 const int n_threads=omp_get_max_threads();
@@ -31,18 +31,18 @@ const int n_threads=omp_get_max_threads();
   return pairf(min,max);
 }
 
-void extent(const int N, const float * const x,const float * const y,float& xmin,float& ymin,float& ext)
+void extent(const int N, const double * const x,const double * const y,double& xmin,double& ymin,double& ext)
 {
 pairf x_mm=MinMax(x,N);
 pairf y_mm=MinMax(y,N);
 xmin=x_mm.first;
 ymin=y_mm.first;
-float  dx(x_mm.second-x_mm.first);
-float  dy(y_mm.second-y_mm.first);
+double  dx(x_mm.second-x_mm.first);
+double  dy(y_mm.second-y_mm.first);
 ext= dx>dy ? dx : dy;
 }
 
-pairf serial_MinMax(const float * const  x,int N)
+pairf serial_MinMax(const double * const  x,int N)
 {
     double min(x[0]),max(x[0]);
     for(int i=1;i<N;i++) {

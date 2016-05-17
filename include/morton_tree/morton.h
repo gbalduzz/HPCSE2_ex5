@@ -5,10 +5,10 @@
 #define EX2_MORTON_H
 using uint=unsigned int;
 
-inline uint integer_mantissa(float x,float xmin,float xmax);
+inline uint integer_mantissa(double x,double xmin,double xmax);
 uint   interleave(uint x,uint y);
 
-void morton(const int N,const float * const x,const float * const y,const float xmin,const float ymin, const float ext, uint * index)
+void morton(const int N,const double * const x,const double * const y,const double xmin,const double ymin, const double ext, uint * index)
 //takes array or coords and return array of square's label where the particle resides
 {
   #pragma omp parallel for schedule(static)
@@ -41,10 +41,10 @@ uint   interleave(uint x,uint y)
     return x | (y << 1);
 }
 
-inline uint integer_mantissa(float x,float xmin,float xmax){
+inline uint integer_mantissa(double x,double xmin,double xmax){
     //map x,y from [x/ymin,x/ymin+ext] to [0, 65536)
     return static_cast<uint>( (x-xmin)/(xmax-xmin)*65535 );
 }
 
-uint integer_mantissa(float x);
+uint integer_mantissa(double x);
 #endif //EX2_MORTON_H

@@ -5,19 +5,23 @@
 #include <vector>
 #include <assert.h>
 #include <cmath>
+#include "expansion/P2E.h"
 #include "node.h"
 #include "extent.h"
 #include "sort.h"
 #include "morton.h"
 #include "reorder.h"
-#include "find_last.h"
+#include "profiler.h"
+#include "p2p.h"
 using std::vector;
-using Tree = vector<Node>;
-void create_children_recursively(const int parent_id,vector<Node>&tree,const double* x,const double* y,const double* m,const uint* label,const int N,const int k);
-void compute_com(vector<Node>& tree,double *x,double* y,double* m);
-inline int check_size(const vector<Node>& tree);
+template<int order>
+void create_children(const int parent_id, Tree<order>& tree,
+                     const Particles& p,const uint* label,const int N);
+template<int k>
+void computeRootComExpansion(Tree<k>& tree, const Particles& p);
 
-void buildTree(const Particles& p, const int k, Particles p_ordered,Tree& tree)
+template<int exp_order>
+void buildTree(const Particles& p, const int k, Particles& p_ordered,Tree<exp_order>& tree)
 {
   //perform the exrcise 2 and find the morton labels of the points
   const int N=p.N;
@@ -25,7 +29,9 @@ void buildTree(const Particles& p, const int k, Particles p_ordered,Tree& tree)
   uint *label = new uint[N];
   double xmin, ymin, ext;
   {
+#ifdef DEBUG
     Profiler p("old morton labelling");
+#endif
     extent(N, p.x, p.y, xmin, ymin, ext);
     morton(N, p.x, p.y, xmin, ymin, ext, label);
     sort(N, label, keys);
@@ -33,7 +39,7 @@ void buildTree(const Particles& p, const int k, Particles p_ordered,Tree& tree)
   }
   delete[] keys;
 
-  tree.clear();
+  tree.resize(1);
   tree.reserve(N*2);
   //create root node
   tree[0].level = 0;
@@ -51,13 +57,21 @@ void buildTree(const Particles& p, const int k, Particles p_ordered,Tree& tree)
         continue;
       }
       tree[i].child_id = tree.size();
-      create_children(i, tree, p_ordered.x, p_ordered.y, p_ordered.w, label, N);
+      create_children(i, tree, p_ordered, label, N);
     }
   }
-  compute_root_com(tree,p_ordered.x, p_ordered.y, p_ordered.w);
+  computeRootComExpansion(tree,p_ordered);
+
+//compute radius;
+  tree[0].r2=0;
+  const double x_corner[]={xmin,xmin+ext,xmin,xmin+ext};
+  const double y_corner[]={ymin,ymin,ymin+ext,ymin+ext};
+  for(int i=0;i<4;i++){
+    const double dist=squareDistance(tree[0].xcom,x_corner[i],tree[0].ycom,y_corner[i]);
+    if (tree[0].r2<dist) tree[0].r2=dist;
+  }
 
   delete[] label;
-  return tree;
 }
 
 inline int get_new_id(uint parent_id,int level,int i)
@@ -77,13 +91,14 @@ uint create_mask(int level)
          ((1 << 2*level)-1) << (n_bits-2*level);
 }
 
-void create_children(const int parent_id, vector<Node>& tree,
-                     const float* x,const float* y,const float* m,const uint* label,const int N)
+template<int order>
+void create_children(const int parent_id, Tree<order>& tree,
+                     const Particles& p,const uint* label,const int N)
 {
   int current_idx=tree[parent_id].part_start;
   uint mask=create_mask(tree[parent_id].level+1);
   for(int i=0;i<4;i++) {
-    tree.push_back(Node());
+    tree.push_back(Node<order>());
     int child_id=tree.size()-1;
     tree[child_id].level=tree[parent_id].level+1;
     tree[child_id].morton_id=get_new_id(tree[parent_id].morton_id,tree[child_id].level,i);
@@ -92,14 +107,27 @@ void create_children(const int parent_id, vector<Node>& tree,
       tree[child_id].part_start=current_idx;
       while((label[current_idx] & mask) == tree[child_id].morton_id
             &&  current_idx<N) {
-        tree[child_id].xcom+=m[current_idx]*x[current_idx];
-        tree[child_id].ycom+=m[current_idx]*y[current_idx];
-        tree[child_id].mass+=m[current_idx];
+        tree[child_id].xcom+=p.w[current_idx]*p.x[current_idx];
+        tree[child_id].ycom+=p.w[current_idx]*p.y[current_idx];
+        tree[child_id].mass+=p.w[current_idx];
         current_idx++;
       }
       tree[child_id].part_end=current_idx-1;
       tree[child_id].xcom/=tree[child_id].mass;
       tree[child_id].ycom/=tree[child_id].mass;
+      //radius. Naive implementation
+      tree[child_id].r2=0;
+      for(int i=tree[child_id].part_start;i<=tree[child_id].part_end;i++){
+        const double dist=squareDistance(p.x[i],tree[child_id].xcom,p.y[i],tree[child_id].ycom);
+        if(tree[child_id].r2<dist) tree[child_id].r2=dist;
+      }
+
+      //compute expansion
+      const int offset = tree[child_id].part_start;
+      const int length = tree[child_id].part_end-offset;
+      P2E<order>(p.subEnsamble(offset,length),
+                 tree[child_id].xcom, tree[child_id].ycom,
+                 tree[child_id].re_expansion,tree[child_id].im_expansion);
     }
     else{//is empty
       tree[child_id].part_start=-1;
@@ -108,7 +136,8 @@ void create_children(const int parent_id, vector<Node>& tree,
   }
 }
 
-void compute_root_com(vector<Node>& tree,float *x,float* y,float* m){
+template<int k>
+void computeRootComExpansion(Tree<k>& tree, const Particles& p){
   for(int i=1;i<5;i++){
     tree[0].mass+=tree[i].mass;
     tree[0].xcom+=tree[i].mass*tree[i].xcom;
@@ -116,4 +145,8 @@ void compute_root_com(vector<Node>& tree,float *x,float* y,float* m){
   }
   tree[0].xcom/=tree[0].mass;
   tree[0].ycom/=tree[0].mass;
+  //compute expansion
+  P2E<k>(p,
+             tree[0].xcom, tree[0].ycom,
+             tree[0].re_expansion,tree[0].im_expansion);
 }

@@ -25,17 +25,16 @@ void read_from_file(const std::string& filename, Particles& particles, Particles
   inp.read((char*)targets.y,size);
   inp.read((char*)targets.w,size);
 
-  assert(inp.tellg() != inp.end);
   inp.close();
   }
 
 void writeToFile(const Particles& p, const std::string& filename){
   std::ofstream out(filename.c_str());
-  assert(out);
+  if(not out)throw("output file not available");
   for(int i=0;i<p.N;i++) out<<p.x[i]<<"\t"<<p.y[i]<<"\t"<<p.w[i]<<endl;
 }
 
-using std::cout; using std::endl;
+/*using std::cout; using std::endl;
 bool check_from_file(double res,int k, const std::string& filename){
     std::ifstream inp(filename.c_str());
     assert(inp);
@@ -52,7 +51,7 @@ bool check_from_file(double res,int k, const std::string& filename){
         cout<<"Stream:\t"<<res<<endl;
         cout<<"File value:\t"<<ref<<endl;
     }
-    return check;
-}
+  *  return check;
+}*/
 
 

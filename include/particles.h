@@ -4,18 +4,21 @@
 #include <complex>
 
 struct Particles{
-  int N; //passed from global scope
   double  *x,*y,*w;
+  int N;
+  bool is_a_copy;
 
-  Particles(){N=0;}
+  Particles(){is_a_copy=true;}
   Particles(int N0);
+  Particles(double* ,double* ,double* ,const int );
   ~Particles();
-  Particles subEnsamble(int i0,int l);
+  Particles subEnsamble(int i0,int l) const;
   void resize(int N);
 };
 
 Particles::Particles(int N0):N(N0)
 {
+  is_a_copy=false;
   x = new double[N];
   y = new double[N];
   w = new double[N];
@@ -23,14 +26,18 @@ Particles::Particles(int N0):N(N0)
 
 Particles::~Particles()
 {
-  if(N) {
+  if(not is_a_copy) {
     delete[] x;
     delete[] y;
     delete[] w;
   }
 }
 
-Particles Particles::subEnsamble(int i0, int l) {
+Particles::Particles(double* x0,double* y0,double* w0,const int N0):
+x(x0),y(y0),w(w0),N(N0),is_a_copy(true)
+{}
+
+Particles Particles::subEnsamble(int i0, int l) const{
   assert(i0+l <= N);
   Particles p2;
   p2.x = x+i0;
@@ -41,13 +48,13 @@ Particles Particles::subEnsamble(int i0, int l) {
 }
 
 void Particles::resize(int N0) {
-  if(N == N0) return;
-  if(N){
+  N=N0;
+  if(not is_a_copy) {
     delete[] x;
     delete[] y;
     delete[] w;
   }
-  N=N0;
+  is_a_copy=false;
   x = new double[N];
   y = new double[N];
   w = new double[N];
