@@ -1,22 +1,19 @@
 #pragma once
-#include <assert.h>
 using uint= unsigned int;
 
-template<int k>
-struct Node{
-  double xcom,ycom,mass;
-  double r2; //squared radius from com
-  int level;
+struct Node
+{
+  int part_start, part_end;
   int child_id;
-  int part_start,part_end;
-  uint morton_id;
-  double re_expansion[k+1];
-  double im_expansion[k+1];
+  double mass, xcom, ycom;
+  int level, morton_id;
 
-  Node():xcom(0),ycom(0),mass(0),child_id(-1),part_start(0),part_end(-5){}
-  int occupancy()const {return std::max(part_end-part_start+1,0);}
+  void setup(int part_start, int part_end, int level, int morton_id)
+  {
+    this->part_start = part_start;
+    this->part_end = part_end;
+    this->child_id = 0;
+    this->level = level;
+    this->morton_id = morton_id;
+  }
 };
-
-#include <vector>
-template<int k>
-using Tree = std::vector<Node<k>>;

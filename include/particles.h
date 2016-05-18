@@ -10,9 +10,9 @@ struct Particles{
 
   Particles(){is_a_copy=true;}
   Particles(int N0);
-  Particles(double* ,double* ,double* ,const int );
+  inline Particles(double* ,double* ,double* ,const int );
   ~Particles();
-  Particles subEnsamble(int i0,int l) const;
+  inline Particles subEnsamble(int i0,int l) const;
   void resize(int N);
 };
 
@@ -39,12 +39,7 @@ x(x0),y(y0),w(w0),N(N0),is_a_copy(true)
 
 Particles Particles::subEnsamble(int i0, int l) const{
   assert(i0+l <= N);
-  Particles p2;
-  p2.x = x+i0;
-  p2.y = y+i0;
-  p2.w = w+i0;
-  p2.N = l;
-  return p2;
+  return Particles(x+i0,y+i0.w+i0,N);;
 }
 
 void Particles::resize(int N0) {

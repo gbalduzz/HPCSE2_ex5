@@ -5,7 +5,7 @@ const static int k=20;
 #include "include/file_IO.h"
 #include "include/particles.h"
 #include "include/profiler.h"
-#include "morton_tree/buildTree.h"
+#include "morton_tree/build_tree.h"
 #include "expansion/node_to_expansion.hpp"
 using std::cout; using std::endl;
 using std::vector;
@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
     Np=atoi(argv[1]);
     Nt=atoi(argv[2]);
   }
+  const int maxnodes= 2*Np;
   Particles particles(Np),targets(Nt);
   generateRandomData(particles,0);
   generateRandomData(targets,42);
@@ -30,8 +31,7 @@ int main(int argc, char** argv) {
 
   //compute target locations with multipole expansion
   Profiler pr("Expansion");
-  Particles p_ordered(particles.N);
-  Tree<exp_order> tree;
+  Tree<exp_order> tree(particles,maxnodes,exp_order);
   buildTree<exp_order>(particles,exp_order,p_ordered,tree);
   potential(2.,p_ordered,tree,targets);
   pr.stop();
