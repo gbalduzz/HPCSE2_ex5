@@ -9,14 +9,21 @@ const static int k=20;
 #include "expansion/node_to_expansion.hpp"
 using std::cout; using std::endl;
 using std::vector;
-
+void generateRandomData(Particles& ,int seed);
+bool checkDifference(Particles&, Particles&);
 
 int main(int argc, char** argv) {
   constexpr int exp_order = 8;
-
-  Particles particles,targets;
-  read_from_file( "/home/giovanni/uni/HPCSE/ex5/diegoBinaryN400",//PROJECT_SOURCE_DIR
-                  particles,targets);
+  int Np=10000;
+  int Nt=1000;
+  if(argc==3){
+    Np=atoi(argv[1]);
+    Nt=atoi(argv[2]);
+  }
+  Particles particles(Np),targets(Nt);
+  generateRandomData(particles,0);
+  generateRandomData(targets,42);
+  assert(checkDifference(particles,targets));
 
   cout<<"N# of particles: "<<particles.N<<endl;
   cout<<"N# of targets: "<<targets.N<<endl;
@@ -39,3 +46,21 @@ int main(int argc, char** argv) {
 
 }
 
+
+#include <random>
+void generateRandomData(Particles& p,int seed){
+  std::mt19937_64 mt(seed);
+  std::uniform_real_distribution<double> ran(0,1);
+  for(int i=0;i<p.N;i++){
+    p.x[i]=ran(mt);
+    p.y[i]=ran(mt);
+    p.w[i]=2*ran(mt)-1;
+  }
+}
+
+bool checkDifference(Particles& a, Particles& b){
+  for(int i=0;i<a.N;i++)
+    for(int j=0;j<b.N;j++)
+      if((a.x[i]==b.x[i]) && (a.y[i]==b.y[i])) return false;
+  return true;
+}
