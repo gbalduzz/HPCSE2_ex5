@@ -26,5 +26,6 @@ void P2E(const Particles& p,double xcom,double ycom,double* c_re,double* c_im){
         }
     }
     //divide by coeff order
+#pragma omp simd
     for(int i=2;i<k+1;i++) {c_re[i]/=i;c_im[i]/=i;}
 }

@@ -2,29 +2,40 @@
 #include <vector>
 #include <assert.h>
 #include <cmath>
-#include "node.h"
+#include "morton_tree/node.h"
 #include "particles.h"
 #include "morton_tree/tree_prepare.h"
+#include "expansion/P2E.h"
 #include "profiler.h"
-#define LMAX 15
 using std::vector;
 using uint = unsigned int;
 inline int decodeId(int x);
 
+
 class Tree
 {
+  double ext, xmin, ymin;
+  int maxnodes;
+  int   currnnodes=1;
+  const int K; //max leaf capacity
   vector<Node> nodes;
-  int   currnnodes=1, maxnodes;
+  vector<double> re_expansions;
+  vector<double> im_expansions;
   Particles p;
   vector<int> label;
-  double ext, xmin, ymin;
-  const int K; //max leaf capacity
 
 public:
 
   Tree(Particles& unordered_particles,const int maxn, const int leaf_cap);
+  template<int order>
+  void computeMassAndExpansions();
+  inline const Node& operator[](const int i)const{return nodes[i];}
+  inline const Particles& getParticles()const{return p;}
+  inline const double* getReExpansion(const int i)const{return &re_expansions[i*exp_order];}
+  inline const double* getImExpansion(const int i)const{return &im_expansions[i*exp_order];}
   void PrintInfo(int nprint);
 
+  int exp_order=0;
 private:
   void build();
   void build_leaf(const int nodeid, const int s, const int e, const double x0, const double y0, const double h);
@@ -32,8 +43,9 @@ private:
   void labelAndReorder(Particles&);
 };
 
+
 Tree::Tree(Particles& up,const int maxnd, const int leaf_cap):
-maxnodes(maxnd),nodes(maxnodes),p(up.N),label(up.N),K(leaf_cap)
+maxnodes(maxnd),K(leaf_cap),nodes(maxnodes),p(up.N),label(up.N)
 { 
   labelAndReorder(up);
   nodes[0].setup(0, p.N, 0, 0);
@@ -41,6 +53,7 @@ maxnodes(maxnd),nodes(maxnodes),p(up.N),label(up.N),K(leaf_cap)
 #pragma omp single nowait
     build_tree(0);
 }
+
 
 void Tree::labelAndReorder(Particles &p_unord) {
   vector<int> keys(p.N);
@@ -50,16 +63,18 @@ void Tree::labelAndReorder(Particles &p_unord) {
   reorder(p.N, keys.data(), p_unord.x, p_unord.y, p_unord.w, p.x, p.y, p.w);
 }
 
+
 void Tree::build_leaf(const int nodeid, const int s, const int e, const double x0, const double y0, const double h)
 {
   Node * node = nodes.data() + nodeid;
 
-  double w, wx, wy;
-  leaf_setup(p.x + s, p.y + s, p.w + s, e - s, node->mass, w, wx, wy);
-
+  double wx, wy;
+  leaf_setup(p.x + s, p.y + s, p.w + s, e - s, node->mass, wx, wy);
+  const double w = node->mass;
   node->xcom = w ? wx / w : (x0 + 0.5 * h);
   node->ycom = w ? wy / w : (y0 + 0.5 * h);
 }
+
 
 void Tree::build_tree(const int nodeid)
 {
@@ -106,7 +121,7 @@ void Tree::build_tree(const int nodeid)
       const int chId = childbase + c;
       nodes[chId].setup(indexmin, indexsup, l + 1, key1);
 
-#pragma omp task firstprivate(chId) if (indexsup - indexmin > 5e3 && c < 3)
+#pragma omp task firstprivate(chId) if (indexsup - indexmin > 1e3 && c < 3)
       {
         build_tree(chId);
       }
@@ -124,8 +139,37 @@ inline int decodeId(int x)
   return x;
 }
 
+template<int exp_order>
+void Tree::computeMassAndExpansions() {
+  this->exp_order = exp_order;
+  re_expansions.resize(currnnodes*(exp_order+1));
+  im_expansions.resize(currnnodes*(exp_order+1));
+  for(int i=currnnodes-1;i>-1;i--){
+    Node* const node = &nodes[i];
+    const int child_id =node->child_id;
+    if(child_id){ //combine childrens coms
+      assert(node->mass==0);
+      double mass(0),xcom(0),ycom(0);
+      const double mass_term = nodes[child_id+i].mass;
+      for(int j=0;j<4;j++) {
+        mass += mass_term;
+        xcom += mass_term * nodes[child_id+j].xcom;
+        ycom += mass_term * nodes[child_id+j].ycom;
+      }
+      node->setCom(mass,xcom/mass,ycom/mass);
+    }
+    const int offset = exp_order*i;
+    const int s = node->part_start;
+    const int e = node->part_end;
+    P2E<exp_order>(p.subEnsamble(s,e-s),
+                   node->xcom,node->ycom,&re_expansions[offset],&im_expansions[offset]);
+  }
+}
+
+
 #include <iostream>
 using std::cout; using std::endl;
+
 void Tree::PrintInfo(int nprint){
   nprint = std::min(nprint,currnnodes);
   cout<<"Number of nodes: "<<currnnodes<<endl;
@@ -133,7 +177,6 @@ void Tree::PrintInfo(int nprint){
     const int s =nodes[i].part_start;
     const int e =nodes[i].part_end;
     cout<<"i="<<i<<" level: "<<nodes[i].level<<"\tfirst child: "<<nodes[i].child_id<<
-    //"\t N_points: "<<e-s<<
     "\t mass: "<<nodes[i].mass<<
     "\t start,end "<<s<<" , "<<e<<
     "\tcom: "<<nodes[i].xcom<<" , "<<nodes[i].ycom<<endl;

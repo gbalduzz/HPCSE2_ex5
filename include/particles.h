@@ -39,7 +39,7 @@ x(x0),y(y0),w(w0),N(N0),is_a_copy(true)
 
 Particles Particles::subEnsamble(int i0, int l) const{
   assert(i0+l <= N);
-  return Particles(x+i0,y+i0.w+i0,N);;
+  return Particles(x+i0,y+i0,w+i0,N);;
 }
 
 void Particles::resize(int N0) {

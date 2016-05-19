@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <parallel/algorithm>
 #include <cmath>
+constexpr int  LMAX = 15;
 
 void minmax_vec(const double xsrc[], const double ysrc[], const int nsources, double xmin_xmax_ymin_ymax[])
 {
@@ -142,23 +143,21 @@ void reorder(const int N, const int* const keys, const double* const x, const do
   }
 }
 
-inline void leaf_setup(const double xsources[], const double ysources[], const double msources[], const int nsources,
-                       double& mass, double& weight, double& xsum, double& ysum)
+inline void leaf_setup(const double xsources[], const double ysources[], const double wsources[], const int nsources,
+                       double& mass, double& xsum, double& ysum)
 {
-  mass = 0, weight = 0, xsum = 0, ysum = 0;
+  mass = 0, xsum = 0, ysum = 0;
 
-#pragma omp simd reduction(+:mass,weight,xsum,ysum)
+#pragma omp simd reduction(+:mass,xsum,ysum)
   for(int i = 0; i < nsources; ++i)
   {
     const double x = xsources[i];
     const double y = ysources[i];
-    const double m = msources[i];
-    const double w = fabs(m);
+    const double m = fabs(wsources[i]);
 
     mass += m;
-    weight += w;
-    xsum += x * w;
-    ysum += y * w;
+    xsum += x * m;
+    ysum += y * m;
   }
 }
 

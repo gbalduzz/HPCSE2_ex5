@@ -31,16 +31,16 @@ int main(int argc, char** argv) {
 
   //compute target locations with multipole expansion
   Profiler pr("Expansion");
-  Tree<exp_order> tree(particles,maxnodes,exp_order);
-  buildTree<exp_order>(particles,exp_order,p_ordered,tree);
-  potential(2.,p_ordered,tree,targets);
+  Tree tree(particles,maxnodes,exp_order);
+  tree.computeMassAndExpansions<exp_order>();
+  potential<exp_order>(2.,tree,targets);
   pr.stop();
   writeToFile(targets,"expansion.out");
 
   //compute target locations with direct evaluations
   Profiler pr2("Direct evaluation");
 #pragma omp parallel for default(shared) schedule(static)
-  for(int i=0;i<targets.N;i++) targets.w[i]=p2p(p_ordered,targets.x[i],targets.y[i]);
+  for(int i=0;i<targets.N;i++) targets.w[i]=p2p(particles,targets.x[i],targets.y[i]);
   pr2.stop();
   writeToFile(targets,"direct.out");
 
