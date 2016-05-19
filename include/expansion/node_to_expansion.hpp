@@ -6,19 +6,19 @@
 //TODO MAYBE: spawn children only if needed
 template<int k>
 double evalPoint2Node(double x,double y,const double one_over_theta2,const Particles& prt, const Tree& tree,const int id) {
-
-  if(not tree[id].mass) return 0; //empty node
-  if (squareDistance(x, tree[id].xcom, y, tree[id].ycom) > one_over_theta2 * tree[id].r2) //use expansin
-    return e2p<k>(x - tree[id].xcom, y - tree[id].ycom, tree.getReExpansion(id), tree.getImExpansion(id));
+const Node* const node = &tree[id];
+  if(not node->mass) return 0; //empty node
+  if (squareDistance(x, node->xcom, y, node->ycom) > one_over_theta2 * node->r2) //use expansin
+    return e2p<k>(x - node->xcom, y - node->ycom, tree.getReExpansion(id), tree.getImExpansion(id));
 //else travel further down into the tree
-  if (tree[id].child_id == 0) { //is a leaf
-    const int s = tree[id].part_start;
-    const int e = tree[id].part_end;
+  if (node->child_id == 0) { //is a leaf
+    const int s = node->part_start;
+    const int e = node->part_end;
     return p2p(prt.subEnsamble(s,e-s), x, y);
   }
 
   double stream = 0;
-  for (int i = 0; i < 4; i++) stream += evalPoint2Node<k>(x, y, one_over_theta2 ,prt,tree, tree[id].child_id + i);
+  for (int i = 0; i < 4; i++) stream += evalPoint2Node<k>(x, y, one_over_theta2 ,prt,tree, node->child_id + i);
   return stream;
 }
 
@@ -28,6 +28,8 @@ void potential(const double theta,const Tree& tree, Particles& targets)
 {
   assert(tree.exp_order == exp_order);
   const double oot2=1/(theta*theta);
+
+
   for(int i=0;i<targets.N;i++)
   targets.w[i] = evalPoint2Node<exp_order>(targets.x[i],targets.y[i],oot2,tree.getParticles(),tree,0);
 }

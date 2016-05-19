@@ -1,4 +1,3 @@
-const static int k=20;
 #include <iostream>
 #include <string>
 #include "include/Performance_measurer.h"
@@ -20,7 +19,7 @@ int main(int argc, char** argv) {
     Np=atoi(argv[1]);
     Nt=atoi(argv[2]);
   }
-  const int maxnodes= 2*Np;
+  const int maxnodes= 4*Np/exp_order;
   Particles particles(Np),targets(Nt);
   generateRandomData(particles,0);
   generateRandomData(targets,42);

@@ -28,8 +28,8 @@ public:
   void computeMassAndExpansions();
   inline const Node& operator[](const int i)const{return nodes[i];}
   inline const Particles& getParticles()const{return p;}
-  inline const double* getReExpansion(const int i)const{assert(i<currnnodes); return &re_expansions[i*exp_order];}
-  inline const double* getImExpansion(const int i)const{assert(i<currnnodes); return &im_expansions[i*exp_order];}
+  inline const double* getReExpansion(const int i)const{assert(i<currnnodes); return &re_expansions[i*(exp_order+1)];}
+  inline const double* getImExpansion(const int i)const{assert(i<currnnodes); return &im_expansions[i*(exp_order+1)];}
   void PrintInfo(int nprint);
   int size()const{return currnnodes;}
 
