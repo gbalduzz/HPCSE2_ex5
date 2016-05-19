@@ -8,6 +8,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14  -Wstrict-aliasing=2 -Wall -f
 add_definitions(-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR})
 add_definitions(-D_GLIBCXX_PARALLEL)
 
-set(SOURCE_FILES main.cpp)
-add_executable(ex5 ${SOURCE_FILES})
-target_include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include)
+include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include)
+add_executable(ex5 main.cpp)
+
+include(CTest)
+add_executable(test_radius test_radius.cpp)
+add_test(radius test_radius.cpp)
+
