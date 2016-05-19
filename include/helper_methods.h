@@ -112,8 +112,7 @@ void sort(const int N, int* index, int* keys)
   for (int i=0; i<N; i++)
     keys[i] = i;
 
-  std::pair<int, int> * kv = NULL;
-  posix_memalign((void **)&kv, 32, sizeof(*kv) * N);
+  std::pair<int, int> * kv = new std::pair<int,int>[N];
 
 #pragma omp parallel for
   for(int i = 0; i < N; ++i)
@@ -130,8 +129,7 @@ void sort(const int N, int* index, int* keys)
     index[i] = kv[i].first;
     keys[i] = kv[i].second;
   }
-
-  free(kv);
+  delete[] kv;
 }
 
 void reorder(const int N, const int* const keys, const double* const x, const double* const y, const double* const m, double* xsorted, double* ysorted, double *msorted)
@@ -240,7 +238,7 @@ int upper_bound_vec(int s, int e, const int val, const int keys[])
 
 inline int decodeId(int x)
 {
-  x &= 0x55555555;
+  x &= 0x55555555; //keeps odd bits
   x = (x ^ (x >>  1)) & 0x33333333;
   x = (x ^ (x >>  2)) & 0x0f0f0f0f;
   x = (x ^ (x >>  4)) & 0x00ff00ff;

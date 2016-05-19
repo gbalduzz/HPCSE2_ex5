@@ -7,9 +7,10 @@
 template<int k>
 double evalPoint2Node(double x,double y,const double one_over_theta2,const Particles& prt, const Tree& tree,const int id) {
 
-  if (squareDistance(x, tree[id].xcom, y, tree[id].ycom) > one_over_theta2 * tree[id].r2)
+  if(not tree[id].mass) return 0; //empty node
+  if (squareDistance(x, tree[id].xcom, y, tree[id].ycom) > one_over_theta2 * tree[id].r2) //use expansin
     return e2p<k>(x - tree[id].xcom, y - tree[id].ycom, tree.getReExpansion(id), tree.getImExpansion(id));
-
+//else travel further down into the tree
   if (tree[id].child_id == 0) { //is a leaf
     const int s = tree[id].part_start;
     const int e = tree[id].part_end;

@@ -13,9 +13,9 @@ void generateRandomData(Particles& ,int seed);
 bool checkDifference(Particles&, Particles&);
 
 int main(int argc, char** argv) {
-  constexpr int exp_order = 2;
+  constexpr int exp_order = 8;
   int Np=10;
-  int Nt=1000;
+  int Nt=10;
   if(argc==3){
     Np=atoi(argv[1]);
     Nt=atoi(argv[2]);
@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 
   cout<<"N# of particles: "<<particles.N<<endl;
   cout<<"N# of targets: "<<targets.N<<endl;
+  cout<<"parallelizing over "<<omp_get_max_threads()<<" threads"<<endl<<endl;
 
   //compute target locations with multipole expansion
   Profiler pr("Expansion");
@@ -44,7 +45,7 @@ int main(int argc, char** argv) {
   pr2.stop();
   writeToFile(targets,"direct.out");
 
-  tree.PrintInfo(tree.size());
+  tree.PrintInfo(10);
 }
 
 

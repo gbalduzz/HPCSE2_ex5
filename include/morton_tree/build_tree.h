@@ -28,8 +28,8 @@ public:
   void computeMassAndExpansions();
   inline const Node& operator[](const int i)const{return nodes[i];}
   inline const Particles& getParticles()const{return p;}
-  inline const double* getReExpansion(const int i)const{return &re_expansions[i*exp_order];}
-  inline const double* getImExpansion(const int i)const{return &im_expansions[i*exp_order];}
+  inline const double* getReExpansion(const int i)const{assert(i<currnnodes); return &re_expansions[i*exp_order];}
+  inline const double* getImExpansion(const int i)const{assert(i<currnnodes); return &im_expansions[i*exp_order];}
   void PrintInfo(int nprint);
   int size()const{return currnnodes;}
 
@@ -148,7 +148,7 @@ void Tree::computeMassAndExpansions() {
     //compute radius
     node->r2 = computeRadius(x0,y0,ext,node->xcom,node->ycom);
     //compute expansion
-    const int offset = exp_order*i;
+    const int offset = (exp_order+1)*i;
     const int s = node->part_start;
     const int e = node->part_end;
     P2E<exp_order>(p.subEnsamble(s,e-s),
@@ -163,7 +163,7 @@ using std::cout; using std::endl;
 void Tree::PrintInfo(int nprint){
   nprint = std::min(nprint,currnnodes);
   cout<<"Number of nodes: "<<currnnodes<<endl;
-  for(int i=currnnodes-nprint; i<currnnodes;i++){
+  for(int i=0; i<nprint;i++){
     const int s =nodes[i].part_start;
     const int e =nodes[i].part_end;
     cout<<"i="<<i<<" level: "<<nodes[i].level<<"\tfirst child: "<<nodes[i].child_id<<
