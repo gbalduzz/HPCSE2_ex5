@@ -2,6 +2,7 @@
 #define PARTICLES_H
 #include <vector>
 #include <complex>
+#include <assert.h>
 
 struct Particles{
   double  *x,*y,*w;

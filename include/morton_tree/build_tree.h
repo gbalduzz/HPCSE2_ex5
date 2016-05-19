@@ -19,7 +19,7 @@ class Tree
   vector<double> re_expansions;
   vector<double> im_expansions;
   Particles p;
-  vector<int> label;
+  vector<uint> label;
 
 public:
 
@@ -108,8 +108,8 @@ void Tree::build_tree(const int nodeid)
       const int key1 = mId | (c << shift);
       const int key2 = key1 + (1 << shift) - 1;
 
-      const size_t indexmin = c == 0 ? s : lower_bound_vec(s, e, key1, label.data());
-      const size_t indexsup = c == 3 ? e : upper_bound_vec(s, e, key2, label.data());
+      const size_t indexmin = c == 0 ? s : lower_bound_vec(s, e, key1, label);
+      const size_t indexsup = c == 3 ? e : upper_bound_vec(s, e, key2, label);
 
       const int chId = childbase + c;
       nodes[chId].setup(indexmin, indexsup, l + 1, key1);
@@ -141,12 +141,14 @@ void Tree::computeMassAndExpansions() {
       }
       node->setCom(mass,xcom/mass,ycom/mass);
     }
+    else if(node->mass == 0) continue;
     const double h = ext / (1 << node->level);
-    const int mId = node->morton_id;
-    const double x0 = xmin + h * decodeId(mId);
-    const double y0 = ymin + h * decodeId(mId >> 1);
+    const uint mId = node->morton_id;
+    const double step = ext/(1 << LMAX);
+    const double x0 = xmin + step * decodeId(mId);
+    const double y0 = ymin + step * decodeId(mId >> 1);
     //compute radius
-    node->r2 = computeRadius(x0,y0,ext,node->xcom,node->ycom);
+    node->r2 = computeRadius(x0,y0,h,node->xcom,node->ycom);
     //compute expansion
     const int offset = (exp_order+1)*i;
     const int s = node->part_start;

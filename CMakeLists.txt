@@ -13,5 +13,5 @@ add_executable(ex5 main.cpp)
 
 include(CTest)
 add_executable(test_radius test_radius.cpp)
-add_test(radius test_radius.cpp)
+add_test(radius test_radius)
 

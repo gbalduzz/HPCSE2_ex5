@@ -14,8 +14,8 @@ bool checkDifference(Particles&, Particles&);
 
 int main(int argc, char** argv) {
   constexpr int exp_order = 8;
-  int Np=10;
-  int Nt=10;
+  int Np=1000;
+  int Nt=100;
   if(argc==3){
     Np=atoi(argv[1]);
     Nt=atoi(argv[2]);

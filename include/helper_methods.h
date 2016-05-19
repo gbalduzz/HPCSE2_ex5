@@ -3,7 +3,11 @@
 #include <cstdio>
 #include <parallel/algorithm>
 #include <cmath>
-constexpr int  LMAX = 15;
+#include <vector>
+using std::vector;
+using uint = unsigned int;
+constexpr uint  LMAX = 16;
+
 
 inline double squareDistance(double x1,double x2,double y1,double y2){
   return (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2);
@@ -84,7 +88,7 @@ void extent(const int N, const double* const x, const double* const y,
 }
 
 void morton(const int N, const double* const x, const double* const y,
-            const double xmin, const double ymin, const double ext, int* index)
+            const double xmin, const double ymin, const double ext, uint* index)
 {
 #pragma omp parallel for
   for(int i = 0; i < N; ++i)
@@ -106,13 +110,13 @@ void morton(const int N, const double* const x, const double* const y,
   }
 }
 
-void sort(const int N, int* index, int* keys)
+void sort(const int N, uint* index, int* keys)
 {
 #pragma omp parallel for simd  schedule(static)
   for (int i=0; i<N; i++)
     keys[i] = i;
 
-  std::pair<int, int> * kv = new std::pair<int,int>[N];
+  std::pair<uint, int> * kv = new std::pair<uint,int>[N];
 
 #pragma omp parallel for
   for(int i = 0; i < N; ++i)
@@ -166,7 +170,7 @@ inline void leaf_setup(const double xsources[], const double ysources[], const d
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
-int lower_bound_vec(int s, int e, const int val, const int keys[])
+int lower_bound_vec(int s, int e, const int val, const vector<uint>& keys)
 {
   int c = e - s;
 
@@ -201,7 +205,7 @@ int lower_bound_vec(int s, int e, const int val, const int keys[])
   return s + 1;
 }
 
-int upper_bound_vec(int s, int e, const int val, const int keys[])
+int upper_bound_vec(int s, int e, const int val, const vector<uint>& keys)
 {
   int c = e - s;
 
@@ -236,7 +240,7 @@ int upper_bound_vec(int s, int e, const int val, const int keys[])
   return s + 1;
 }
 
-inline int decodeId(int x)
+inline uint decodeId(uint x)
 {
   x &= 0x55555555; //keeps odd bits
   x = (x ^ (x >>  1)) & 0x33333333;

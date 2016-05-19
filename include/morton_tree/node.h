@@ -1,11 +1,12 @@
 #pragma once
-//using uint= unsigned int;
+using uint= unsigned int;
 
 struct Node
 {
   int part_start, part_end;
   int child_id;
-  int level, morton_id;
+  int level;
+  uint morton_id;
   double r2; //square radius from com
   double mass=0; //sum of abs(w)
   double xcom, ycom;
