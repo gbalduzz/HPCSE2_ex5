@@ -1,5 +1,4 @@
-#ifndef PARTICLES_H
-#define PARTICLES_H
+#pragma once
 #include <vector>
 #include <complex>
 #include <assert.h>
@@ -56,4 +55,9 @@ void Particles::resize(int N0) {
   w = new double[N];
 }
 
-#endif
+#include<iostream>
+using std::cout; using std::endl;
+void Print(const Particles& p){
+  cout<<"x\ty\tw\n";
+  for(int i=0;i<p.N;i++) cout<<p.x[i]<<"\t"<<p.y[i]<<"\t"<<p.w[i]<<endl;
+}

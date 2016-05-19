@@ -14,8 +14,8 @@ bool checkDifference(Particles&, Particles&);
 
 int main(int argc, char** argv) {
   constexpr int exp_order = 8;
-  int Np=1000;
-  int Nt=100;
+  int Np=100;
+  int Nt=10;
   if(argc==3){
     Np=atoi(argv[1]);
     Nt=atoi(argv[2]);
@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
   potential<exp_order>(2.,tree,targets);
   pr.stop();
   writeToFile(targets,"expansion.out");
+  Print(targets);
 
   //compute target locations with direct evaluations
   Profiler pr2("Direct evaluation");
@@ -45,7 +46,7 @@ int main(int argc, char** argv) {
   pr2.stop();
   writeToFile(targets,"direct.out");
 
-  tree.PrintInfo(10);
+  //tree.PrintInfo(10);
 }
 
 
