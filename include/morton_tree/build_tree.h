@@ -167,6 +167,7 @@ void Tree::PrintInfo(int nprint){
     const int s =nodes[i].part_start;
     const int e =nodes[i].part_end;
     cout<<"i="<<i<<" level: "<<nodes[i].level<<"\tfirst child: "<<nodes[i].child_id<<
+    "\t r2: "<<nodes[i].r2<<
     "\t mass: "<<nodes[i].mass<<
     "\t start,end "<<s<<" , "<<e<<
     "\tcom: "<<nodes[i].xcom<<" , "<<nodes[i].ycom<<endl;
