@@ -5,6 +5,10 @@
 #include <cmath>
 constexpr int  LMAX = 15;
 
+inline double squareDistance(double x1,double x2,double y1,double y2){
+  return (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2);
+}
+
 void minmax_vec(const double xsrc[], const double ysrc[], const int nsources, double xmin_xmax_ymin_ymax[])
 {
   double lxmi = 1e13, lymi = 1e13, lxma = -1e13, lyma = -1e13;
@@ -232,4 +236,27 @@ int upper_bound_vec(int s, int e, const int val, const int keys[])
   }
 
   return s + 1;
+}
+
+inline int decodeId(int x)
+{
+  x &= 0x55555555;
+  x = (x ^ (x >>  1)) & 0x33333333;
+  x = (x ^ (x >>  2)) & 0x0f0f0f0f;
+  x = (x ^ (x >>  4)) & 0x00ff00ff;
+  x = (x ^ (x >>  8)) & 0x0000ffff;
+  return x;
+}
+
+//naive implementation
+double computeRadius(const double x0,const double y0,const double ext,
+                            const double xcom,const double ycom){
+  const double xcorner[]={x0,x0+ext,x0,x0+ext};
+  const double ycorner[]={y0,y0,y0+ext,y0+ext};
+  double res(0);
+  for(int i=0;i<4;i++){
+    const double dist = squareDistance(xcom,xcorner[i],ycom,ycorner[i]);
+    res = std::max(res,dist);
+  }
+  return res;
 }

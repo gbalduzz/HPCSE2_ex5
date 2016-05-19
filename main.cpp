@@ -13,8 +13,8 @@ void generateRandomData(Particles& ,int seed);
 bool checkDifference(Particles&, Particles&);
 
 int main(int argc, char** argv) {
-  constexpr int exp_order = 8;
-  int Np=10000;
+  constexpr int exp_order = 2;
+  int Np=10;
   int Nt=1000;
   if(argc==3){
     Np=atoi(argv[1]);
@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
   pr2.stop();
   writeToFile(targets,"direct.out");
 
+  tree.PrintInfo(tree.size());
 }
 
 
