@@ -10,6 +10,7 @@
 #include "profiler.h"
 using std::vector;
 
+template<int order>
 class Tree
 {
   double ext, xmin, ymin;
@@ -17,44 +18,47 @@ class Tree
   int   currnnodes=1;
   const int K; //max leaf capacity
   vector<Node> nodes;
-  vector<double> re_expansions;
-  vector<double> im_expansions;
   Particles p;
   vector<uint> label;
+  vector<double> re_expansions;
+  vector<double> im_expansions;
 
 public:
 
   Tree(Particles& unordered_particles,const int maxn, const int leaf_cap);
-  template<int order>
-  void computeMassAndExpansions();
   inline const Node& operator[](const int i)const{return nodes[i];}
   inline const Particles& getParticles()const{return p;}
-  inline const double* getReExpansion(const int i)const{assert(i<currnnodes); return &re_expansions[i*(exp_order+1)];}
-  inline const double* getImExpansion(const int i)const{assert(i<currnnodes); return &im_expansions[i*(exp_order+1)];}
+  inline const double* getReExpansion(const int i)const{assert(i<currnnodes); return &re_expansions[i*(order+1)];}
+  inline const double* getImExpansion(const int i)const{assert(i<currnnodes); return &im_expansions[i*(order+1)];}
+  inline  double* getReExpansion(const int i){assert(i<currnnodes); return &re_expansions[i*(order+1)];}
+  inline  double* getImExpansion(const int i){assert(i<currnnodes); return &im_expansions[i*(order+1)];}
   void PrintInfo(int nprint);
   int size()const{return currnnodes;}
 
-  int exp_order=0;
 private:
   void build();
   void build_leaf(const int nodeid, const int s, const int e);
   void build_tree(const int nodeid);
   void labelAndReorder(Particles&);
+  void computeMass();
 };
 
-
-Tree::Tree(Particles& up,const int maxnd, const int leaf_cap):
-maxnodes(maxnd),K(leaf_cap),nodes(maxnodes),p(up.N),label(up.N)
+template<int order>
+Tree<order>::Tree(Particles& up,const int maxnd, const int leaf_cap):
+maxnodes(maxnd),K(leaf_cap),nodes(maxnodes),p(up.N),label(up.N),
+re_expansions(maxnodes*(order+1)),im_expansions(maxnodes*(order+1))
 { 
   labelAndReorder(up);
   nodes[0].setup(0, p.N, 0, 0);
 #pragma omp parallel
 #pragma omp single nowait
     build_tree(0);
+
+  computeMass();
 }
 
-
-void Tree::labelAndReorder(Particles &p_unord) {
+template<int order>
+void Tree<order>::labelAndReorder(Particles &p_unord) {
   vector<int> keys(p.N);
   extent(p.N,p_unord.x,p_unord.y,xmin,ymin,ext);
   morton(p.N,p_unord.x,p_unord.y,xmin,ymin,ext,label.data());
@@ -62,8 +66,8 @@ void Tree::labelAndReorder(Particles &p_unord) {
   reorder(p.N, keys.data(), p_unord.x, p_unord.y, p_unord.w, p.x, p.y, p.w);
 }
 
-
-void Tree::build_leaf(const int nodeid, const int s, const int e)
+template<int order>
+void Tree<order>::build_leaf(const int nodeid, const int s, const int e)
 {
   Node * node = nodes.data() + nodeid;
 
@@ -76,8 +80,8 @@ void Tree::build_leaf(const int nodeid, const int s, const int e)
   }
 }
 
-
-void Tree::build_tree(const int nodeid)
+template<int order>
+void Tree<order>::build_tree(const int nodeid)
 {
   Node * const node = nodes.data() + nodeid;
 
@@ -100,7 +104,7 @@ void Tree::build_tree(const int nodeid)
       childbase = currnnodes; currnnodes += 4;
     }
     assert(nodeid < childbase);
-    assert(childbase + 4 <= maxnodes);
+    if(childbase + 4 > maxnodes) throw(std::logic_error("Nodes exceed maximum"));
 
     node->child_id = childbase;
 
@@ -123,18 +127,14 @@ void Tree::build_tree(const int nodeid)
       }
     }
   }
+
+  P2E<order>(p.subEnsamble(s, e-s),
+                 node->xcom, node->ycom, getReExpansion(nodeid), getImExpansion(nodeid));
 }
 
-template<int exp_order>
-void Tree::computeMassAndExpansions()
+template<int order>
+void Tree<order>::computeMass()
 {
-  this->exp_order = exp_order;
-  re_expansions.resize(currnnodes*(exp_order+1));
-  im_expansions.resize(currnnodes*(exp_order+1));
-#pragma omp parallel
-#pragma omp single nowait
-#pragma omp task
-  {
     for (int i = currnnodes - 1; i > -1; i--) {
       Node *const node = &nodes[i];
       const int child_id = node->child_id;
@@ -158,26 +158,13 @@ void Tree::computeMassAndExpansions()
       //compute radius
       node->r2 = computeRadius(x0, y0, h, node->xcom, node->ycom);
     }
-  }
-
-  //compute expansion
-#pragma omp parallel for schedule(static,1)
-  for (int i=0;i<currnnodes; i++){
-    const Node *const node = &nodes[i];
-    const int offset = (exp_order + 1) * i;
-    const int s = node->part_start;
-    const int n = node->part_end - s;
-    P2E<exp_order>(p.subEnsamble(s, n),
-                   node->xcom, node->ycom, &re_expansions[offset], &im_expansions[offset]);
-  }
-#pragma omp taskwait
 }
 
 
 #include <iostream>
 using std::cout; using std::endl;
-
-void Tree::PrintInfo(int nprint){
+template<int order>
+void Tree<order>::PrintInfo(int nprint){
   nprint = std::min(nprint,currnnodes);
   cout<<"Number of nodes: "<<currnnodes<<endl;
   for(int i=0; i<nprint;i++){

@@ -11,7 +11,7 @@ add_definitions(-D_GLIBCXX_PARALLEL)
 include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include)
 add_executable(ex5 main.cpp)
 
-include(CTest)
-add_executable(test_radius test_radius.cpp)
-add_test(radius test_radius)
+#include(CTest)
+#add_executable(test_radius test_radius.cpp)
+#add_test(radius test_radius)
 

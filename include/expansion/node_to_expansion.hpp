@@ -5,7 +5,7 @@
 
 //TODO MAYBE: spawn children only if needed
 template<int k>
-double evalPoint2Node(double x,double y,const double one_over_theta2,const Particles& prt, const Tree& tree,const int id) {
+double evalPoint2Node(double x,double y,const double one_over_theta2,const Particles& prt, const Tree<k>& tree,const int id) {
 const Node* const node = &tree[id];
   if(not node->mass) return 0; //empty node
   if (squareDistance(x, node->xcom, y, node->ycom) > one_over_theta2 * node->r2) //use expansin
@@ -23,10 +23,9 @@ const Node* const node = &tree[id];
 }
 
 template<int exp_order>
-void potential(const double theta,const Tree& tree, Particles& targets)
+void potential(const double theta,const Tree<exp_order>& tree, Particles& targets)
 //compute the potential at targets and store the result in  targets.w array
 {
-  assert(tree.exp_order == exp_order);
   const double oot2=1/(theta*theta);
 
 #pragma omp parallel for schedule(static,1)

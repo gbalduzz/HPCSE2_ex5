@@ -35,8 +35,7 @@ int main(int argc, char** argv) {
     Profiler pr("Expansion");
 
     Profiler p2("Tree creation");
-    Tree tree(particles, maxnodes, exp_order);
-    tree.computeMassAndExpansions<exp_order>();
+    Tree<exp_order> tree(particles, maxnodes, exp_order);
     p2.stop();
     ReorderIP(targets);
     Profiler p3("potentail eval");
@@ -66,7 +65,7 @@ void generateRandomData(Particles& p,int seed){
   for(int i=0;i<p.N;i++){
     p.x[i]=ran(mt);
     p.y[i]=ran(mt);
-    p.w[i]=ran(mt);//2*ran(mt)-1;
+    p.w[i]=2*ran(mt)-1;
   }
 }
 
