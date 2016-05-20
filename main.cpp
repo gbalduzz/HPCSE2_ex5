@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     Profiler pr("Expansion");
 
     Profiler p2("Tree creation");
-    Tree<exp_order> tree(particles, maxnodes, exp_order);
+    Tree<exp_order> tree(particles, maxnodes, 2*exp_order);
     p2.stop();
     ReorderIP(targets);
     Profiler p3("potentail eval");

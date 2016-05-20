@@ -7,6 +7,7 @@
 #include "profiler.h"
 #include "helper_methods.h"
 #include "expansion/P2E.h"
+#include "expansion/e2e.h"
 #include "profiler.h"
 using std::vector;
 
@@ -40,7 +41,7 @@ private:
   void build_leaf(const int nodeid, const int s, const int e);
   void build_tree(const int nodeid);
   void labelAndReorder(Particles&);
-  void computeMass();
+  void computeMassAndExpansion();
 };
 
 template<int order>
@@ -53,8 +54,9 @@ re_expansions(maxnodes*(order+1)),im_expansions(maxnodes*(order+1))
 #pragma omp parallel
 #pragma omp single nowait
     build_tree(0);
-
-  computeMass();
+//compute parent nodes properties
+  //TODO parallelize over threads
+  computeMassAndExpansion();
 }
 
 template<int order>
@@ -95,6 +97,8 @@ void Tree<order>::build_tree(const int nodeid)
   if (leaf)
   {
     build_leaf(nodeid, s, e);
+    P2E<order>(p.subEnsamble(s, e-s),
+               node->xcom, node->ycom, getReExpansion(nodeid), getImExpansion(nodeid));
   }
   else
   {
@@ -127,27 +131,34 @@ void Tree<order>::build_tree(const int nodeid)
       }
     }
   }
-
-  P2E<order>(p.subEnsamble(s, e-s),
-                 node->xcom, node->ycom, getReExpansion(nodeid), getImExpansion(nodeid));
 }
 
 template<int order>
-void Tree<order>::computeMass()
+void Tree<order>::computeMassAndExpansion()
 {
     for (int i = currnnodes - 1; i > -1; i--) {
       Node *const node = &nodes[i];
-      const int child_id = node->child_id;
-      if (child_id) { //combine childrens coms
+      const int first_child = node->child_id;
+      if (first_child) {
         assert(node->mass == 0);
+        //combine children coms
         double mass(0), xcom(0), ycom(0);
         for (int j = 0; j < 4; j++) {
-          const double mass_term = nodes[child_id + j].mass;
+          const int child_id = first_child+j;
+          const double mass_term = nodes[child_id].mass;
           mass += mass_term;
-          xcom += mass_term * nodes[child_id + j].xcom;
-          ycom += mass_term * nodes[child_id + j].ycom;
+          xcom += mass_term * nodes[child_id].xcom;
+          ycom += mass_term * nodes[child_id].ycom;
         }
         node->setCom(mass, xcom / mass, ycom / mass);
+        //combine children expansions
+        for(int j=0;j<4;j++) {
+          const int child_id = first_child+j;
+          const double z0_re = nodes[child_id].xcom - node->xcom;
+          const double z0_im = nodes[child_id].ycom - node->ycom;
+          e2e<order>(getReExpansion(child_id), getImExpansion(child_id), z0_re, z0_im,
+                     getReExpansion(i), getImExpansion(i));
+        }
       }
       else if (node->mass == 0) continue;
       const double h = ext / (1 << node->level);
