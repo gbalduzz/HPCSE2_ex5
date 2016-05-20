@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
   writeToFile(targets,"expansion.out");
   Print(targets,5);
-/*
+
   //compute target locations with direct evaluations
   Profiler pr2("Direct evaluation");
 #pragma omp parallel for default(shared) schedule(static)
@@ -52,8 +52,7 @@ int main(int argc, char** argv) {
   pr2.stop();
   writeToFile(targets,"direct.out");
   Print(targets,5);
-  */
-
+  
   //tree.PrintInfo(10);
 }
 
