@@ -175,3 +175,16 @@ void Tree::PrintInfo(int nprint){
     "\tcom: "<<nodes[i].xcom<<" , "<<nodes[i].ycom<<endl;
   }
 }
+
+void ReorderIP(Particles &p_unord) {
+  const int N=p_unord.N;
+  Particles p(N);
+  vector<int> keys(N);
+  vector<uint> label(N);
+  double ext,xmin,ymin;
+  extent(N,p_unord.x,p_unord.y,xmin,ymin,ext);
+  morton(N,p_unord.x,p_unord.y,xmin,ymin,ext,label.data());
+  sort(N,label.data(),keys.data());
+  reorder(N, keys.data(), p_unord.x, p_unord.y, p_unord.w, p.x, p.y, p.w);
+  swap(p_unord,p);
+}

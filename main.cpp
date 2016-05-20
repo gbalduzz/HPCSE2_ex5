@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
   Profiler pr("Expansion");
   Tree tree(particles,maxnodes,exp_order);
   tree.computeMassAndExpansions<exp_order>();
+  ReorderIP(targets);
   potential<exp_order>(2.,tree,targets);
   pr.stop();
   writeToFile(targets,"expansion.out");

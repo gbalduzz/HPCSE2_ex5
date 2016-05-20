@@ -14,6 +14,7 @@ struct Particles{
   ~Particles();
   inline Particles subEnsamble(int i0,int l) const;
   void resize(int N);
+  friend void swap(Particles& a,Particles& b);
 };
 
 Particles::Particles(int N0):N(N0)
@@ -53,6 +54,16 @@ void Particles::resize(int N0) {
   x = new double[N];
   y = new double[N];
   w = new double[N];
+}
+
+void swap(Particles& a,Particles& b){
+  assert(not (a.is_a_copy and b.is_a_copy));
+  double *xtmp(a.x),*ytmp(a.y),*wtmp(a.w);
+  int ntmp=a.N;
+  a.x=b.x; a.y=b.y; a.w=b.w;
+  a.N=b.N;
+  b.x=xtmp; b.y=ytmp; b.w=wtmp;
+  b.N=ntmp;
 }
 
 #include<iostream>
