@@ -1,3 +1,4 @@
+#define DETAILED_PROFILING
 #include <iostream>
 #include <string>
 #include "include/Performance_measurer.h"
@@ -31,12 +32,22 @@ int main(int argc, char** argv) {
   cout<<"parallelizing over "<<omp_get_max_threads()<<" threads"<<endl<<endl;
 
   //compute target locations with multipole expansion
-  Profiler pr("Expansion");
-  Tree tree(particles,maxnodes,exp_order);
-  tree.computeMassAndExpansions<exp_order>();
-  ReorderIP(targets);
-  potential<exp_order>(2.,tree,targets);
-  pr.stop();
+  {
+    Profiler pr("Expansion");
+#ifdef DETAILED_PROFILING
+    Profiler p2("Tree creation");
+#endif
+    Tree tree(particles, maxnodes, exp_order);
+    tree.computeMassAndExpansions<exp_order>();
+#ifdef DETAILED_PROFILING
+    p2.stop();
+#endif
+    ReorderIP(targets);
+#ifdef DETAILED_PROFILING
+    Profiler p3("potentail eval");
+#endif
+    potential<exp_order>(2., tree, targets);
+  }
   writeToFile(targets,"expansion.out");
   Print(targets,5);
 

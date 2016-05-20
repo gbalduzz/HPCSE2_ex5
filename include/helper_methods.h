@@ -90,7 +90,7 @@ void extent(const int N, const double* const x, const double* const y,
 void morton(const int N, const double* const x, const double* const y,
             const double xmin, const double ymin, const double ext, uint* index)
 {
-#pragma omp parallel for
+#pragma omp parallel for simd
   for(int i = 0; i < N; ++i)
   {
     int xid = floor((x[i] - xmin) / ext * (1 << LMAX));
@@ -118,7 +118,7 @@ void sort(const int N, uint* index, int* keys)
 
   std::pair<uint, int> * kv = new std::pair<uint,int>[N];
 
-#pragma omp parallel for
+#pragma omp parallel for simd
   for(int i = 0; i < N; ++i)
   {
     kv[i].first = index[i];
@@ -127,7 +127,7 @@ void sort(const int N, uint* index, int* keys)
 
   __gnu_parallel::sort(kv, kv + N);
 
-#pragma omp parallel for
+#pragma omp parallel for simd
   for(int i = 0; i < N; ++i)
   {
     index[i] = kv[i].first;
@@ -142,7 +142,6 @@ void reorder(const int N, const int* const keys, const double* const x, const do
   for(int i = 0; i < N; ++i)
   {
     const int entry = keys[i];
-
     xsorted[i] = x[entry];
     ysorted[i] = y[entry];
     msorted[i] = m[entry];
@@ -185,7 +184,7 @@ int lower_bound_vec(int s, int e, const int val, const vector<uint>& keys)
     const int s0 = s, e0 = e;
 
     const double h = (e - s) * 1.f / 8;
-
+#pragma omp simd
     for(int programIndex = 0; programIndex < 8; ++programIndex)
     {
       //int candidate_s = s0, candidate_e = e0;
@@ -220,7 +219,7 @@ int upper_bound_vec(int s, int e, const int val, const vector<uint>& keys)
     const int s0 = s, e0 = e;
 
     const double h = (e - s) * 1.f / 8;
-
+#pragma omp simd
     for(int programIndex = 0; programIndex < 8; ++programIndex)
     {
       //int candidate_s = s0, candidate_e = e0;
