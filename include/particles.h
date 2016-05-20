@@ -57,7 +57,8 @@ void Particles::resize(int N0) {
 
 #include<iostream>
 using std::cout; using std::endl;
-void Print(const Particles& p){
+void Print(const Particles& p,int n=0){
+  n= n? std::min(n,p.N) : p.N;
   cout<<"x\ty\tw\n";
-  for(int i=0;i<p.N;i++) cout<<p.x[i]<<"\t"<<p.y[i]<<"\t"<<p.w[i]<<endl;
+  for(int i=0;i<n;i++) cout<<p.x[i]<<"\t"<<p.y[i]<<"\t"<<p.w[i]<<endl;
 }

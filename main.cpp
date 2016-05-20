@@ -13,8 +13,8 @@ bool checkDifference(Particles&, Particles&);
 
 int main(int argc, char** argv) {
   constexpr int exp_order = 8;
-  int Np=100;
-  int Nt=10;
+  int Np=1e4;
+  int Nt=1e4;
   if(argc==3){
     Np=atoi(argv[1]);
     Nt=atoi(argv[2]);
@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
   generateRandomData(particles,0);
   generateRandomData(targets,42);
   assert(checkDifference(particles,targets));
+  //targets.x[0]=1;targets.y[0]=1;
 
   cout<<"N# of particles: "<<particles.N<<endl;
   cout<<"N# of targets: "<<targets.N<<endl;
@@ -36,7 +37,7 @@ int main(int argc, char** argv) {
   potential<exp_order>(2.,tree,targets);
   pr.stop();
   writeToFile(targets,"expansion.out");
-  Print(targets);
+  Print(targets,5);
 
   //compute target locations with direct evaluations
   Profiler pr2("Direct evaluation");
@@ -44,6 +45,7 @@ int main(int argc, char** argv) {
   for(int i=0;i<targets.N;i++) targets.w[i]=p2p(particles,targets.x[i],targets.y[i]);
   pr2.stop();
   writeToFile(targets,"direct.out");
+  Print(targets,5);
 
   //tree.PrintInfo(10);
 }
@@ -56,7 +58,7 @@ void generateRandomData(Particles& p,int seed){
   for(int i=0;i<p.N;i++){
     p.x[i]=ran(mt);
     p.y[i]=ran(mt);
-    p.w[i]=2*ran(mt)-1;
+    p.w[i]=ran(mt);//2*ran(mt)-1;
   }
 }
 

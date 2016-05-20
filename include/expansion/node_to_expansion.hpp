@@ -29,7 +29,7 @@ void potential(const double theta,const Tree& tree, Particles& targets)
   assert(tree.exp_order == exp_order);
   const double oot2=1/(theta*theta);
 
-
+#pragma omp parallel for schedule(dynamic)
   for(int i=0;i<targets.N;i++)
   targets.w[i] = evalPoint2Node<exp_order>(targets.x[i],targets.y[i],oot2,tree.getParticles(),tree,0);
 }
