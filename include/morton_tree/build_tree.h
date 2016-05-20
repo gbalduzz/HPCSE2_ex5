@@ -55,9 +55,6 @@ maxnodes(maxnd),K(leaf_cap),nodes(maxnodes),p(up.N),label(up.N)
 
 
 void Tree::labelAndReorder(Particles &p_unord) {
-#ifdef DETAILED_PROFILING
-  Profiler pr("label and reorder");
-#endif
   vector<int> keys(p.N);
   extent(p.N,p_unord.x,p_unord.y,xmin,ymin,ext);
   morton(p.N,p_unord.x,p_unord.y,xmin,ymin,ext,label.data());
