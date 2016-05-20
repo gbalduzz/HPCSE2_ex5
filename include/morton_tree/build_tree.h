@@ -131,38 +131,46 @@ void Tree::computeMassAndExpansions()
   this->exp_order = exp_order;
   re_expansions.resize(currnnodes*(exp_order+1));
   im_expansions.resize(currnnodes*(exp_order+1));
-//#pragma omp parallel
-//#pragma omp single nowait
-  for(int i=currnnodes-1;i>-1;i--){
-    Node* const node = &nodes[i];
-    const int child_id =node->child_id;
-    if(child_id){ //combine childrens coms
-      assert(node->mass==0);
-      double mass(0),xcom(0),ycom(0);
-      for(int j=0;j<4;j++) {
-        const double mass_term = nodes[child_id+j].mass;
-        mass += mass_term;
-        xcom += mass_term * nodes[child_id+j].xcom;
-        ycom += mass_term * nodes[child_id+j].ycom;
+#pragma omp parallel
+#pragma omp single nowait
+#pragma omp task
+  {
+    for (int i = currnnodes - 1; i > -1; i--) {
+      Node *const node = &nodes[i];
+      const int child_id = node->child_id;
+      if (child_id) { //combine childrens coms
+        assert(node->mass == 0);
+        double mass(0), xcom(0), ycom(0);
+        for (int j = 0; j < 4; j++) {
+          const double mass_term = nodes[child_id + j].mass;
+          mass += mass_term;
+          xcom += mass_term * nodes[child_id + j].xcom;
+          ycom += mass_term * nodes[child_id + j].ycom;
+        }
+        node->setCom(mass, xcom / mass, ycom / mass);
       }
-      node->setCom(mass,xcom/mass,ycom/mass);
+      else if (node->mass == 0) continue;
+      const double h = ext / (1 << node->level);
+      const uint mId = node->morton_id;
+      const double step = ext / (1 << LMAX);
+      const double x0 = xmin + step * decodeId(mId);
+      const double y0 = ymin + step * decodeId(mId >> 1);
+      //compute radius
+      node->r2 = computeRadius(x0, y0, h, node->xcom, node->ycom);
     }
-    else if(node->mass == 0) continue;
-    const double h = ext / (1 << node->level);
-    const uint mId = node->morton_id;
-    const double step = ext/(1 << LMAX);
-    const double x0 = xmin + step * decodeId(mId);
-    const double y0 = ymin + step * decodeId(mId >> 1);
-    //compute radius
-    node->r2 = computeRadius(x0,y0,h,node->xcom,node->ycom);
-    //compute expansion
-    const int offset = (exp_order+1)*i;
-    const int s = node->part_start;
-    const int n = node->part_end-s;
-//#pragma omp task firstprivate(s,n,node,offset) if(n>1e3)
-    P2E<exp_order>(p.subEnsamble(s,n),
-                   node->xcom,node->ycom,&re_expansions[offset],&im_expansions[offset]);
   }
+
+  //compute expansion
+#pragma omp parallel for schedule(static,1)
+  for (int i=0;i<currnnodes; i++){
+    const Node *const node = &nodes[i];
+    const int offset = (exp_order + 1) * i;
+    const int s = node->part_start;
+    const int n = node->part_end - s;
+    P2E<exp_order>(p.subEnsamble(s, n),
+                   node->xcom, node->ycom, &re_expansions[offset], &im_expansions[offset]);
+  }
+#pragma omp taskwait
 }
 
 
