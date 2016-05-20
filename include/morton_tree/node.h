@@ -9,7 +9,7 @@ struct Node
   uint morton_id;
   double r2; //square radius from com
   double mass=0; //sum of abs(w)
-  double xcom, ycom;
+  double xcom=0, ycom=0;
 
   void setup(int part_start, int part_end, int level, int morton_id)
   {

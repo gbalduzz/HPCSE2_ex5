@@ -4,8 +4,6 @@
 #include "morton_tree/build_tree.h"
 using std::cout; using std::endl;
 using std::vector;
-
-
 void check_near(double a,double b);
 
 int main() {

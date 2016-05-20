@@ -70,8 +70,10 @@ void Tree::build_leaf(const int nodeid, const int s, const int e)
   double wx, wy;
   leaf_setup(p.x + s, p.y + s, p.w + s, e - s, node->mass, wx, wy);
   const double w = node->mass;
-  node->xcom = w ? wx / w : 0;
-  node->ycom = w ? wy / w : 0;
+  if(w) {
+    node->xcom = wx / w;
+    node->ycom = wy / w;
+  }
 }
 
 
@@ -124,10 +126,13 @@ void Tree::build_tree(const int nodeid)
 }
 
 template<int exp_order>
-void Tree::computeMassAndExpansions() {
+void Tree::computeMassAndExpansions()
+{
   this->exp_order = exp_order;
   re_expansions.resize(currnnodes*(exp_order+1));
   im_expansions.resize(currnnodes*(exp_order+1));
+//#pragma omp parallel
+//#pragma omp single nowait
   for(int i=currnnodes-1;i>-1;i--){
     Node* const node = &nodes[i];
     const int child_id =node->child_id;
@@ -153,8 +158,9 @@ void Tree::computeMassAndExpansions() {
     //compute expansion
     const int offset = (exp_order+1)*i;
     const int s = node->part_start;
-    const int e = node->part_end;
-    P2E<exp_order>(p.subEnsamble(s,e-s),
+    const int n = node->part_end-s;
+//#pragma omp task firstprivate(s,n,node,offset) if(n>1e3)
+    P2E<exp_order>(p.subEnsamble(s,n),
                    node->xcom,node->ycom,&re_expansions[offset],&im_expansions[offset]);
   }
 }

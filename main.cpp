@@ -13,8 +13,8 @@ bool checkDifference(Particles&, Particles&);
 
 int main(int argc, char** argv) {
   constexpr int exp_order = 8;
-  int Np=1e4;
-  int Nt=1e4;
+  int Np=1e5;
+  int Nt=1e5;
   if(argc==3){
     Np=atoi(argv[1]);
     Nt=atoi(argv[2]);
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
   writeToFile(targets,"expansion.out");
   Print(targets,5);
-
+/*
   //compute target locations with direct evaluations
   Profiler pr2("Direct evaluation");
 #pragma omp parallel for default(shared) schedule(static)
@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
   pr2.stop();
   writeToFile(targets,"direct.out");
   Print(targets,5);
+  */
 
   //tree.PrintInfo(10);
 }
