@@ -56,6 +56,15 @@ struct sum_z_term_to_l_coeff<l,l>{
   }
 };
 
+template<>
+struct sum_z_term_to_l_coeff<0,0>{
+  static void inline execute(const double z_re,const double z_im,
+                             const double* c_re,const double* c_im,
+                             double* new_re,double* new_im){
+    new_re[0] += c_re[0];
+  }
+};
+
 template<int z_exp, int lim>
 struct sum_z_term {
   static void inline execute(const double z_re, const double z_im,
@@ -82,6 +91,5 @@ struct sum_z_term<lim,lim> {
 
 template<int ord>
 void e2e(const double* c_re,const double* c_im, double z_re,double z_im,double* new_re,double* new_im){
-  new_re[0]+=c_re[0];
   sum_z_term<0,ord>::execute(z_re,z_im,1.,0.,c_re,c_im,new_re,new_im);
 }
