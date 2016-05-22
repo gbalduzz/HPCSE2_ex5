@@ -55,8 +55,7 @@ re_expansions(maxnodes*(order+1)),im_expansions(maxnodes*(order+1))
 #pragma omp single nowait
     build_tree(0);
 //compute parent nodes properties
-  //TODO parallelize over threads
-#pragma omp parallel
+  #pragma omp parallel
 #pragma omp single nowait
   computeMassAndExpansion(0);
 }

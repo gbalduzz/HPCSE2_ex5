@@ -2,33 +2,57 @@
 #include "p2p.h"
 #include "morton_tree/node.h"
 #include "e2p.h"
+constexpr int  BUFSIZE=16;
 
-//TODO MAYBE: spawn children only if needed
-template<int k>
-double evalPoint2Node(double x,double y,const double one_over_theta2,const Particles& prt, const Tree<k>& tree,const int id) {
-const Node* const node = &tree[id];
-  if(not node->mass) return 0; //empty node
-  if (squareDistance(x, node->xcom, y, node->ycom) > one_over_theta2 * node->r2) //use expansin
-    return e2p<k>(x - node->xcom, y - node->ycom, tree.getReExpansion(id), tree.getImExpansion(id));
-//else travel further down into the tree
-  if (node->child_id == 0) { //is a leaf
-    const int s = node->part_start;
-    const int e = node->part_end;
-    return p2p(prt.subEnsamble(s,e-s), x, y);
+template<int ord>
+void evaluate(double& result,const double xt,const double yt,
+              const double theta, const Tree<ord>& tree) {
+  const double one_over_theta2=1./(theta*theta);
+  int stack[LMAX * 3];
+  int bufcount = 0;
+  result = 0;
+  double rzs[BUFSIZE], izs[BUFSIZE]/*,ws[BUFSIZE]*/;
+  const double *rxps[BUFSIZE], *ixps[BUFSIZE];
+
+  int stackentry = 0, maxentry = 0;
+  stack[0] = 0;
+  result = 0;
+  while (stackentry > -1) {
+    const int nodeid = stack[stackentry--];
+    const Node *const node = &tree[nodeid];
+    //double tmp[2];
+    const double r2 = squareDistance(xt, node->xcom, yt, node->ycom);
+    if (node->r2 < one_over_theta2 * r2) {
+      rzs[bufcount] = xt - node->xcom;
+      izs[bufcount] = yt - node->ycom;
+      rxps[bufcount] = tree.getReExpansion(nodeid);
+      ixps[bufcount] = tree.getImExpansion(nodeid);
+      bufcount++;
+      if (bufcount == BUFSIZE) {
+        bufcount = 0;
+        result += buffered_e2p<ord>(rzs, izs, rxps, ixps, BUFSIZE);
+      }
+    }
+    else {
+      if (not node->child_id){
+        const int s= node->part_start;
+        const int e= node->part_end;
+        result+=p2p(tree.getParticles().subEnsamble(s,e-s),xt,yt);
+      }
+      else{
+        for(int i=0;i<4;i++) stack[++stackentry] = node->child_id+i;
+        maxentry= std::max(maxentry,stackentry);
+      }
+    }
   }
-
-  double stream = 0;
-  for (int i = 0; i < 4; i++) stream += evalPoint2Node<k>(x, y, one_over_theta2 ,prt,tree, node->child_id + i);
-  return stream;
+  if(bufcount) result+= buffered_e2p<ord>(rzs, izs, rxps, ixps, bufcount);
 }
 
 template<int exp_order>
 void potential(const double theta,const Tree<exp_order>& tree, Particles& targets)
 //compute the potential at targets and store the result in  targets.w array
 {
-  const double oot2=1/(theta*theta);
-
 #pragma omp parallel for schedule(static,1)
   for(int i=0;i<targets.N;i++)
-  targets.w[i] = evalPoint2Node<exp_order>(targets.x[i],targets.y[i],oot2,tree.getParticles(),tree,0);
+    evaluate<exp_order>(targets.w[i],targets.x[i],targets.y[i],theta,tree);
 }
