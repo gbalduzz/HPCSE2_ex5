@@ -72,7 +72,7 @@ struct sum_z_term {
                       const double *c_im, double *new_re, double *new_im) {
     sum_z_term_to_l_coeff<lim, z_exp>::execute(zpow_re, zpow_im, c_re, c_im, new_re, new_im);
     const double new_pow_re = z_re * zpow_re - z_im * zpow_im;
-    const double new_pow_im = z_re * zpow_im - z_im * zpow_re;
+    const double new_pow_im = z_re * zpow_im + z_im * zpow_re;
     sum_z_term<z_exp + 1, lim>::execute(z_re, z_im,
                                         new_pow_re, new_pow_im,
                                         c_re, c_im, new_re, new_im);
