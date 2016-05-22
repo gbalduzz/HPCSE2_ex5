@@ -31,14 +31,24 @@ int main(){
     cout<<"child "<<i+1<<endl;
      PrintExp(tree.getReExpansion(child_id),tree.getImExpansion(child_id),exp_order);
   }
+
+  constexpr int k=2;
+  double c_re[k+1]={1,0.5,0.25};
+  double c_im[k+1]={0,0.5,0.25};
+  double new_re[k+1]={0,0,0};
+  double new_im[k+1]={0,0,0};
+  e2e<k>(c_re,c_im,0,0,new_re,new_im);
+  cout<<"Recomputed expansion\n";
+  PrintExp(new_re,new_im,k);
+
   return 0;
 }
 
 void PrintExp(const double* re,const double* im,const int N){
   cout<<"Re: ";
-  for(int i=0;i<N;i++) cout<<re[i]<<"\t";
+  for(int i=0;i<N+1;i++) cout<<re[i]<<"\t";
   cout<<endl<<"Im: ";
-  for(int i=0;i<N;i++) cout<<im[i]<<"\t";
+  for(int i=0;i<N+1;i++) cout<<im[i]<<"\t";
   cout<<endl;
 }
 
