@@ -37,7 +37,6 @@ public:
   int size()const{return currnnodes;}
 
 private:
-  void build();
   void build_leaf(const int nodeid, const int s, const int e);
   void build_tree(const int nodeid);
   void labelAndReorder(Particles&);

@@ -12,6 +12,7 @@ include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include)
 add_executable(ex5 main.cpp)
 
 #include(CTest)
-add_executable(test_binomial test_binomial.cpp)
+add_executable(test_binomial tests/test_binomial.cpp)
+add_executable(test_e2e tests/test_e2e.cpp)
 #add_test(radius test_radius)
 
