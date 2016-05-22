@@ -41,7 +41,7 @@ private:
   void build_leaf(const int nodeid, const int s, const int e);
   void build_tree(const int nodeid);
   void labelAndReorder(Particles&);
-  void computeMassAndExpansion();
+  void computeMassAndExpansion(int id);
 };
 
 template<int order>
@@ -56,7 +56,9 @@ re_expansions(maxnodes*(order+1)),im_expansions(maxnodes*(order+1))
     build_tree(0);
 //compute parent nodes properties
   //TODO parallelize over threads
-  computeMassAndExpansion();
+#pragma omp parallel
+#pragma omp single nowait
+  computeMassAndExpansion(0);
 }
 
 template<int order>
@@ -134,41 +136,45 @@ void Tree<order>::build_tree(const int nodeid)
 }
 
 template<int order>
-void Tree<order>::computeMassAndExpansion()
+void Tree<order>::computeMassAndExpansion(int id)
 {
-    for (int i = currnnodes - 1; i > -1; i--) {
-      Node *const node = &nodes[i];
-      const int first_child = node->child_id;
-      if (first_child) {
-        assert(node->mass == 0);
-        //combine children coms
-        double mass(0), xcom(0), ycom(0);
-        for (int j = 0; j < 4; j++) {
-          const int child_id = first_child+j;
-          const double mass_term = nodes[child_id].mass;
-          mass += mass_term;
-          xcom += mass_term * nodes[child_id].xcom;
-          ycom += mass_term * nodes[child_id].ycom;
-        }
-        node->setCom(mass, xcom / mass, ycom / mass);
-        //combine children expansions
-        for(int j=0;j<4;j++) {
-          const int child_id = first_child+j;
-          const double z0_re = nodes[child_id].xcom - node->xcom;
-          const double z0_im = nodes[child_id].ycom - node->ycom;
-          e2e<order>(getReExpansion(child_id), getImExpansion(child_id), z0_re, z0_im,
-                     getReExpansion(i), getImExpansion(i));
-        }
-      }
-      else if (node->mass == 0) continue;
-      const double h = ext / (1 << node->level);
-      const uint mId = node->morton_id;
-      const double step = ext / (1 << LMAX);
-      const double x0 = xmin + step * decodeId(mId);
-      const double y0 = ymin + step * decodeId(mId >> 1);
-      //compute radius
-      node->r2 = computeRadius(x0, y0, h, node->xcom, node->ycom);
+  Node *const node = &nodes[id];
+  const int first_child = node->child_id;
+  if(not first_child) return; //nothing to do
+  const int n = node->part_end - node->part_start;
+  for(int i=0;i<4;i++) {
+    const int chId = first_child+i;
+#pragma omp task firstprivate(chId) if (n > 1e3 && i < 3)
+        computeMassAndExpansion(chId);
     }
+
+#pragma omp taskwait
+  //combine children coms
+  double mass(0), xcom(0), ycom(0);
+  for (int j = 0; j < 4; j++) {
+    const int child_id = first_child+j;
+    const double mass_term = nodes[child_id].mass;
+    mass += mass_term;
+    xcom += mass_term * nodes[child_id].xcom;
+    ycom += mass_term * nodes[child_id].ycom;
+  }
+  node->setCom(mass, xcom / mass, ycom / mass);
+  //combine children expansions
+  for(int j=0;j<4;j++) {
+    const int child_id = first_child+j;
+    const double z0_re = nodes[child_id].xcom - node->xcom;
+    const double z0_im = nodes[child_id].ycom - node->ycom;
+    e2e<order>(getReExpansion(child_id), getImExpansion(child_id), z0_re, z0_im,
+               getReExpansion(id), getImExpansion(id));
+  }
+
+  if (node->mass == 0) return;
+  const double h = ext / (1 << node->level);
+  const uint mId = node->morton_id;
+  const double step = ext / (1 << LMAX);
+  const double x0 = xmin + step * decodeId(mId);
+  const double y0 = ymin + step * decodeId(mId >> 1);
+  node->r2 = computeRadius(x0, y0, h, node->xcom, node->ycom);
 }
 
 
