@@ -10,8 +10,8 @@
 template <int k>
 void P2E(const Particles& p,double xcom,double ycom,double* c_re,double* c_im){
     double z_re,z_im; //will store (x+ i y) ^k
-#pragma omp simd
-   for(int i=0;i<k+1;i++) c_re[i]=c_im[i]=0;
+//#pragma omp simd
+//   for(int i=0;i<k+1;i++) c_re[i]=c_im[i]=0;
 
     for(int i=0;i<p.N;i++){
         c_re[0]+=p.w[i];

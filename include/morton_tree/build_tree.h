@@ -47,7 +47,7 @@ private:
 template<int order>
 Tree<order>::Tree(Particles& up,const int maxnd, const int leaf_cap):
 maxnodes(maxnd),K(leaf_cap),nodes(maxnodes),p(up.N),label(up.N),
-re_expansions(maxnodes*(order+1)),im_expansions(maxnodes*(order+1))
+re_expansions(maxnodes*(order+1),0),im_expansions(maxnodes*(order+1),0)
 { 
   labelAndReorder(up);
   nodes[0].setup(0, p.N, 0, 0);
@@ -143,6 +143,7 @@ void Tree<order>::computeMassAndExpansion()
         assert(node->mass == 0);
         //combine children coms
         double mass(0), xcom(0), ycom(0);
+#pragma omp simd reduction(+:mass,xcom,ycom)
         for (int j = 0; j < 4; j++) {
           const int child_id = first_child+j;
           const double mass_term = nodes[child_id].mass;
