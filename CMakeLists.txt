@@ -14,4 +14,7 @@ add_executable(ex5 main.cpp)
 #include(CTest)
 #add_executable(test_radius test_radius.cpp)
 #add_test(radius test_radius)
+add_executable(test_binomial tests/test_binomial.cpp)
+add_executable(test_e2e tests/test_e2e.cpp)
+
 
