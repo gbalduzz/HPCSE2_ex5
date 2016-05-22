@@ -52,7 +52,7 @@ struct sum_z_term_to_l_coeff<l,l>{
                     const double* c_re,const double* c_im,
                       double* new_re,double* new_im){
     new_re[l] += c_re[0]*z_re /l;
-    //new_im[l] += c_im[0]*z_re /l; is zero
+    new_im[l] += c_re[0]*z_im /l;
   }
 };
 
