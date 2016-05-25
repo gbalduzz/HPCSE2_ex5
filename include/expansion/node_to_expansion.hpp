@@ -1,7 +1,7 @@
 #pragma once
 #include "p2p.h"
 #include "morton_tree/node.h"
-#include "e2p.h"
+#include "e2p.ispc.h"
 constexpr int  BUFSIZE=16;
 
 template<int ord>
@@ -30,7 +30,7 @@ void evaluate(double& result,const double xt,const double yt,
       bufcount++;
       if (bufcount == BUFSIZE) {
         bufcount = 0;
-        result += buffered_e2p<ord>(rzs, izs, rxps, ixps, BUFSIZE);
+        result += ispc::e2p(rzs, izs, rxps, ixps, BUFSIZE,ord);
       }
     }
     else {
@@ -45,7 +45,7 @@ void evaluate(double& result,const double xt,const double yt,
       }
     }
   }
-  if(bufcount) result+= buffered_e2p<ord>(rzs, izs, rxps, ixps, bufcount);
+  if(bufcount) result+= ispc::e2p(rzs, izs, rxps, ixps, bufcount, ord);
 }
 
 template<int exp_order>
