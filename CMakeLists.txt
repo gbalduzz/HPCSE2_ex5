@@ -8,9 +8,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14  -Wstrict-aliasing=2 -fopenmp
 add_definitions(-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR})
 add_definitions(-D_GLIBCXX_PARALLEL)
 
-#compile ispc files
+#generate and compile ispc files
 include(ispc.cmake)
-set(ISPC_SOURCES src/p2p.ispc src/e2p.ispc)
+include(m4generate.cmake)
+m4generate(src/e2p.ispc.m4)
+set(ISPC_SOURCES src/p2p.ispc ${M4DIR}/e2p.ispc)
 create_ispc_library("${ISPC_SOURCES}")
 
 include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include)

@@ -30,7 +30,7 @@ void evaluate(double& result,const double xt,const double yt,
       bufcount++;
       if (bufcount == BUFSIZE) {
         bufcount = 0;
-        result += ispc::e2p(rzs, izs, rxps, ixps, BUFSIZE,ord);
+        result += ispc::e2p(rzs, izs, rxps, ixps, BUFSIZE);
       }
     }
     else {
@@ -45,7 +45,7 @@ void evaluate(double& result,const double xt,const double yt,
       }
     }
   }
-  if(bufcount) result+= ispc::e2p(rzs, izs, rxps, ixps, bufcount, ord);
+  if(bufcount) result+= ispc::e2p(rzs, izs, rxps, ixps, bufcount);
 }
 
 template<int exp_order>

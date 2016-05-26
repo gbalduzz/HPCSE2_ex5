@@ -1,9 +1,9 @@
-include(unroll.m4)
+include(src/unroll.m4)
 
 export uniform double e2p(const uniform double z_rev[],const uniform double z_imv[],
        const uniform double* const uniform c_rev[],
        const uniform double* const uniform c_imv[],
-       const uniform int nexp, const uniform int order){
+       const uniform int nexp){
   double result=0;
   foreach(j=0 ... nexp){
     const double z_re = z_rev[j];
