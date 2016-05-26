@@ -17,7 +17,7 @@ export uniform double e2p(const uniform double z_rev[],const uniform double z_im
     const double pow_im_1 = -z_im/r2;
 
     result += c_re[1]*pow_re_1-c_im[1]*pow_im_1;
-    LUNROLL(i,2,eval(ORDER+1),`
+    LUNROLL(i,2,eval(ORDER),`
     // loop iteration
 	    const double TMP(pow_re,i) = TMP(pow_re,eval(i-1))*pow_re_1 - TMP(pow_im, eval(i-1))*pow_im_1;
 	    const double TMP(pow_im,i) = TMP(pow_im, eval(i-1))*pow_re_1 + TMP(pow_re, eval(i-1))*pow_im_1;
