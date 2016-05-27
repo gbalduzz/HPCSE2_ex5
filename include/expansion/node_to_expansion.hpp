@@ -1,15 +1,15 @@
 #pragma once
 #include "p2p.h"
 #include "morton_tree/node.h"
-#include "e2p.ispc.h"
+#include "e2p.h"
 
 //TODO MAYBE: spawn children only if needed
 template<int k>
 double evalPoint2Node(double x,double y,const double one_over_theta2,const Particles& prt, const Tree<k>& tree,const int id) {
 const Node* const node = &tree[id];
   if(not node->mass) return 0; //empty node
-  if (squareDistance(x, node->xcom, y, node->ycom) > one_over_theta2 * node->r2) //use expansion
-    return ispc::e2p(x - node->xcom, y - node->ycom, tree.getReExpansion(id), tree.getImExpansion(id));
+  if (squareDistance(x, node->xcom, y, node->ycom) > one_over_theta2 * node->r2) //use expansin
+    return e2p<k>(x - node->xcom, y - node->ycom, tree.getReExpansion(id), tree.getImExpansion(id));
 //else travel further down into the tree
   if (node->child_id == 0) { //is a leaf
     const int s = node->part_start;
