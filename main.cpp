@@ -1,9 +1,8 @@
 #include <iostream>
 #include <string>
-#include "include/Performance_measurer.h"
 #include "include/file_IO.h"
 #include "include/particles.h"
-#include "include/profiler.h"
+#include "include/timing.h"
 #include "morton_tree/build_tree.h"
 #include "expansion/node_to_expansion.hpp"
 using std::cout; using std::endl;
@@ -25,28 +24,23 @@ int main(int argc, char** argv) {
   generateRandomData(particles,0);
   generateRandomData(targets,42);
   assert(checkDifference(particles,targets));
-  //targets.x[0]=1;targets.y[0]=1;
-
+  
   cout<<"N# of particles: "<<particles.N<<endl;
   cout<<"N# of targets: "<<targets.N<<endl;
   cout<<"parallelizing over "<<omp_get_max_threads()<<" threads"<<endl<<endl;
-
-  //compute target locations with multipole expansion
-  {
-    Profiler pr("Expansion");
-
-    Profiler p2("Tree creation");
-    Tree<exp_order> tree(particles, maxnodes, 2*exp_order);
-    p2.stop();
-    ReorderIP(targets);
-    Profiler p3("potentail eval");
-    potential<exp_order>(2., tree, targets);
-  }
-
-  writeToFile(targets,"expansion.out");
-  Print(targets,5);
-  checkResult(targets,Np); //quick and dirty check
   
+  reset_and_start_timer();
+  //compute target locations with multipole expansion
+  Tree<exp_order> tree(particles, maxnodes, 2*exp_order);
+  ReorderIP(targets);
+  potential<exp_order>(2., tree, targets);
+  double dt = get_elapsed_mcycles();
+
+  cout<<"Elapsed milolion cycles for Expansion: "<<dt<<endl;
+
+  writeTime(omp_get_num_threads(),dt,"timing_e2p_e4_devel.out");
+  Print(targets,5);
+
   /*
   //compute target locations with direct evaluations
   Profiler pr2("Direct evaluation");
