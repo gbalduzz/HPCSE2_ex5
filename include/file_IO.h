@@ -6,6 +6,7 @@
 #include "particles.h"
 #include <iostream>
 using std::cout; using std::endl;
+using std::string;
 
 void read_from_file(const std::string& filename, Particles& particles, Particles& targets){
   std::ifstream inp(filename.c_str(),std::ios::binary);
@@ -34,24 +35,9 @@ void writeToFile(const Particles& p, const std::string& filename){
   for(int i=0;i<p.N;i++) out<<p.x[i]<<"\t"<<p.y[i]<<"\t"<<p.w[i]<<endl;
 }
 
-/*using std::cout; using std::endl;
-bool check_from_file(double res,int k, const std::string& filename){
-    std::ifstream inp(filename.c_str());
-    assert(inp);
-    std::string line;
-    for(int i=0;i<k;i++) std::getline(inp,line);
-    double ref;
-    inp>>ref>>ref;
-    inp.close();
-    bool check =  std::abs((ref-res)/ref) < 1e-6;
-    if(not check)
-    {
-        cout.precision(15);
-        cout<<"Computation error"<<endl;
-        cout<<"Stream:\t"<<res<<endl;
-        cout<<"File value:\t"<<ref<<endl;
-    }
-  *  return check;
-}*/
-
+void writeTime(const int nproc,const double t, const string& filename){
+  std::ofstream out(filename.c_str(),std::fstream::app);
+  out<<nproc<<"\t"<<t<<endl;
+  out.close();
+}
 
