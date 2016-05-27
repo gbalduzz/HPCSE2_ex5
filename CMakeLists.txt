@@ -10,13 +10,15 @@ add_definitions(-D_GLIBCXX_PARALLEL)
 
 #compile ispc files
 include(ispc.cmake)
-create_ispc_library(src/p2p.ispc)
+include(m4generate.cmake)
+m4generate(src/p2e.ispc.m4)
+set(ISPC_SOURCES src/p2p.ispc ${M4DIR}/p2e.ispc)
+create_ispc_library("${ISPC_SOURCES}")
 
 include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include)
 add_executable(ex5 main.cpp)
 target_link_libraries(ex5 ispc)
 
 
-#add_executable(test_e2e tests/test_e2e.cpp)
 
 
