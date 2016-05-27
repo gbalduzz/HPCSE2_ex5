@@ -10,6 +10,7 @@ using std::cout; using std::endl;
 using std::vector;
 void generateRandomData(Particles& ,int seed);
 bool checkDifference(Particles&, Particles&);
+bool checkResult(const Particles& targets,const int Np);
 
 int main(int argc, char** argv) {
   constexpr int exp_order = 8;
@@ -44,19 +45,18 @@ int main(int argc, char** argv) {
 
   writeToFile(targets,"expansion.out");
   Print(targets,5);
-/*
+  checkResult(targets,Np); //quick and dirty check
+  
+  /*
   //compute target locations with direct evaluations
   Profiler pr2("Direct evaluation");
-#pragma omp parallel for default(shared) schedule(static)
+  #pragma omp parallel for default(shared) schedule(static)
   for(int i=0;i<targets.N;i++) targets.w[i]=p2p(particles,targets.x[i],targets.y[i]);
   pr2.stop();
   writeToFile(targets,"direct.out");
   Print(targets,5);
-  */
-
-  //tree.PrintInfo(10);
+  */ 
 }
-
 
 #include <random>
 void generateRandomData(Particles& p,int seed){
@@ -74,4 +74,11 @@ bool checkDifference(Particles& a, Particles& b){
     for(int j=0;j<b.N;j++)
       if((a.x[i]==b.x[i]) && (a.y[i]==b.y[i])) return false;
   return true;
+}
+
+bool checkResult(const Particles& targets,const int Np){
+  if(Np != 1e5){cout<<"test not run \n"; return 0;}
+  if(std::abs(targets.w[0]-(-7.92112))> 1e-4) throw("Test failed");
+  if(std::abs(targets.w[1]-(-8.19657))> 1e-4) throw("Test failed");
+  return 1;
 }
