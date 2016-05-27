@@ -13,11 +13,15 @@ include(ispc.cmake)
 include(m4generate.cmake)
 m4generate(src/p2e.ispc.m4)
 m4generate(src/e2p.ispc.m4)
+m4generate(src/e2e.h.m4)
+
 set(ISPC_SOURCES src/p2p.ispc ${M4DIR}/p2e.ispc ${M4DIR}/e2p.ispc)
 create_ispc_library("${ISPC_SOURCES}")
 
-include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include)
+include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include PRIVATE ${PROJECT_BINARY_DIR})
 add_executable(ex5 main.cpp)
+add_custom_target(e2e ALL DEPENDS ${M4DIR}/e2e.h)
+add_dependencies(ex5  e2e)
 target_link_libraries(ex5 ispc)
 
 

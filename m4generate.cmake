@@ -7,13 +7,13 @@ function(m4generate SOURCE)
   #assert(${extension} STREQ ".m4")
   string(REPLACE ".m4" "" NAME ${FULLNAME})
   set(OUTPUT ${M4DIR}/${NAME})
-  message("m4 output: " ${OUTPUT})
-    add_custom_command( 
-        OUTPUT ${OUTPUT}
-        COMMAND m4  ${SOURCE} > ${OUTPUT}
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	DEPENDS ${SOURCE}
-	VERBATIM
+  add_custom_command(
+          OUTPUT ${OUTPUT}
+          COMMAND m4  ${SOURCE} > ${OUTPUT}
+          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+          DEPENDS ${SOURCE}
+          COMMENT "generate ${OUTPUT} with m4."
+          VERBATIM
         )
-set_source_files_properties( ${OUTPUT} PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE )
+  set_source_files_properties( ${OUTPUT} PROPERTIES GENERATED TRUE)
 endfunction()

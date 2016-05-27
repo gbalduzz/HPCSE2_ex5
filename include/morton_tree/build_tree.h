@@ -8,7 +8,7 @@
 #include "profiler.h"
 #include "helper_methods.h"
 #include "expansion/P2E.h"
-#include "expansion/e2e.h"
+#include "m4out/e2e.h"
 #include "profiler.h"
 using std::vector;
 
@@ -165,7 +165,7 @@ void Tree<order>::computeMassAndExpansion(int id)
     const int child_id = first_child+j;
     const double z0_re = nodes[child_id].xcom - node->xcom;
     const double z0_im = nodes[child_id].ycom - node->ycom;
-    e2e<order>(getReExpansion(child_id), getImExpansion(child_id), z0_re, z0_im,
+    e2e(getReExpansion(child_id), getImExpansion(child_id), z0_re, z0_im,
                getReExpansion(id), getImExpansion(id));
   }
 
