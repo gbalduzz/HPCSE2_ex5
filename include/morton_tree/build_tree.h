@@ -2,6 +2,7 @@
 #include <vector>
 #include <assert.h>
 #include <cmath>
+#include <stdexcept>
 #include "morton_tree/node.h"
 #include "particles.h"
 #include "profiler.h"
