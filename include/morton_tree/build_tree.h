@@ -5,11 +5,9 @@
 #include <stdexcept>
 #include "morton_tree/node.h"
 #include "particles.h"
-#include "profiler.h"
 #include "helper_methods.h"
 #include "expansion/P2E.h"
 #include "expansion/e2e.h"
-#include "profiler.h"
 using std::vector;
 
 template<int order>

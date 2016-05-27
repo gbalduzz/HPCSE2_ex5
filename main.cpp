@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include "include/Performance_measurer.h"
 #include "include/file_IO.h"
 #include "include/particles.h"
 #include "include/timing.h"
