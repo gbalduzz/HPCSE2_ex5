@@ -8,15 +8,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14  -Wstrict-aliasing=2 -fopenmp
 add_definitions(-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR})
 add_definitions(-D_GLIBCXX_PARALLEL)
 
-#compile ispc files
-include(ispc.cmake)
-create_ispc_library(src/p2p.ispc)
-
 include_directories(ex5 PRIVATE ${PROJECT_SOURCE_DIR}/include)
 add_executable(ex5 main.cpp)
-target_link_libraries(ex5 ispc)
 
-
+#include(CTest)
+#add_executable(test_radius test_radius.cpp)
+#add_test(radius test_radius)
+#add_executable(test_binomial tests/test_binomial.cpp)
 #add_executable(test_e2e tests/test_e2e.cpp)
 
 

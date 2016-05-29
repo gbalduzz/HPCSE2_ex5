@@ -1,8 +1,16 @@
 #pragma once
-#include "p2p.ispc.h"
+#include <omp.h>
+#include <cmath>
+#include "helper_methods.h"
 
-inline double p2p( const Particles& p,
+double p2p( const Particles& p,
             double xtarget, double ytarget)
 {
-  return ispc::p2p(p.x,p.y,p.w,xtarget,ytarget,p.N);
+  double res(0);
+#pragma omp simd reduction(+:res)
+//#pragma ivdep
+  for(int i=0;i<p.N;i++){
+   res+=p.w[i]*std::log(squareDistance(p.x[i],xtarget,p.y[i],ytarget));
+ }
+  return res/2.;
 }
