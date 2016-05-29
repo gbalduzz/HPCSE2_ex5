@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
   cout<<"Elapsed milolion cycles for Expansion: "<<dt<<endl;
 
-  writeTime(omp_get_num_threads(),dt,"timing_e2p_e4.out");
+  writeTime(omp_get_max_threads(),dt,"timing_e2p_e4.out");
   Print(targets,5);
 
   /*
