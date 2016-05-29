@@ -36,9 +36,9 @@ int main(int argc, char** argv) {
   potential<exp_order>(2., tree, targets);
   double dt = get_elapsed_mcycles();
 
-  cout<<"Elapsed milolion cycles for Expansion: "<<dt<<endl;
+  cout<<"Elapsed milion cycles for Expansion: "<<dt<<endl;
 
-  writeTime(omp_get_num_threads(),dt,"timing_e2p.out");
+  writeTime(omp_get_max_threads(),dt,"timing_e2p.out");
   Print(targets,5);
 
   /*
